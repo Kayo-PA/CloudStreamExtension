@@ -1,12 +1,10 @@
 package com.CXXX
 
-import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.cloudstream3.utils.*
-import khttp.post
 import org.jsoup.nodes.Element
 
 class Fxprnhd : MainAPI() {
@@ -18,6 +16,7 @@ class Fxprnhd : MainAPI() {
     override val supportedTypes = setOf(TvType.NSFW)
 
     override val mainPage = mainPageOf(
+        "$mainUrl/?s=" to "Latest Video",
         "$mainUrl/c/bangbros" to "Bang Bros",
         "$mainUrl/c/brazzers" to "Brazzers",
         "$mainUrl/c/realitykings" to "Reality Kings",
@@ -62,8 +61,8 @@ class Fxprnhd : MainAPI() {
     override suspend fun search(query: String): List<SearchResponse> {
         val searchResponse = mutableListOf<SearchResponse>()
         for (i in 1..5) {
-            val document =
-                app.get("$mainUrl/page/$i/?s=$query").document
+            val searchParam = if (query == "latest") "" else query
+            val document = app.get("$mainUrl/page/$i/?s=$searchParam").document
             val results =
                 document.select("div.videos-list > article")
                     .mapNotNull {
