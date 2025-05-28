@@ -1,0 +1,8 @@
+{
+"name": "Kayo",
+"description": "This Repo Contains extensions",
+"manifestVersion": 1,
+"pluginLists": [
+"https://raw.githubusercontent.com/Kayo-PA/CloudStreamExtension/refs/heads/builds/plugins.json"
+]
+}
