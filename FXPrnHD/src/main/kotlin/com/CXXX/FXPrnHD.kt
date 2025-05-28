@@ -16,7 +16,7 @@ class Fxprnhd : MainAPI() {
     override val supportedTypes = setOf(TvType.NSFW)
 
     override val mainPage = mainPageOf(
-        "$mainUrl/?s=" to "Latest Video",
+        "latest" to "Latest Video",
         "$mainUrl/c/bangbros" to "Bang Bros",
         "$mainUrl/c/brazzers" to "Brazzers",
         "$mainUrl/c/realitykings" to "Reality Kings",
@@ -29,7 +29,13 @@ class Fxprnhd : MainAPI() {
         page: Int,
         request: MainPageRequest
     ): HomePageResponse {
-        val document = app.get("${request.data}/page/$page").document
+        val targetUrl = if (request.data == "latest") {
+            "$mainUrl/page/$page/?s="
+        } else {
+            "${request.data}/page/$page"
+        }
+
+        val document = app.get(targetUrl).document
         val home =
             document.select("article")
                 .mapNotNull {

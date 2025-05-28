@@ -52,7 +52,8 @@ class YesPornPlease : MainAPI() {
         val searchResponse = mutableListOf<SearchResponse>()
 
         for (i in 1..5) {
-            val document = app.get("${mainUrl}/page/${i}/?s=${query}").document
+            val searchParam = if (query == "latest") "" else query
+            val document = app.get("${mainUrl}/page/${i}/?s=${searchParam}").document
 
             val results = document.select("div.post-preview-styling").mapNotNull { it.toSearchResult() }
 

@@ -77,8 +77,12 @@ class Spankbang : MainAPI() {
         val searchResponse = mutableListOf<SearchResponse>()
 
         for (i in 1..5) {
-            val document = app.get("${mainUrl}/s/$query/").document
-
+            val searchParam = if (query == "latest") {
+                "${mainUrl}/new_videos/"
+            } else {
+                "${mainUrl}/s/$query/"
+            }
+            val document = app.get(searchParam).document
             val results = document.select("div.video-item")
                 .mapNotNull { it.toSearchResult() }
 

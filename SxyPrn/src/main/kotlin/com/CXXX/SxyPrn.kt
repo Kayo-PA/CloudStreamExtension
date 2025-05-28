@@ -63,8 +63,9 @@ class SxyPrn : MainAPI() {
     override suspend fun search(query: String): List<SearchResponse> {
         val searchResponse = mutableListOf<SearchResponse>()
         for (i in 0 until 15) {
+            val searchParam = if (query == "latest") "NEW" else query
             val document = app.get(
-                "$mainUrl/${query.replace(" ", "-")}.html?page=${i * 30}"
+                "$mainUrl/${searchParam.replace(" ", "-")}.html?page=${i * 30}"
             ).document
             val results = document.select("div.main_content div.post_el_small").mapNotNull {
                 it.toSearchResult()

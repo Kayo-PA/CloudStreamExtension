@@ -150,9 +150,9 @@ class Perverzija : MainAPI() {
         for (i in 1..maxPages) {
             val url = if (query.contains(" ")) {
                 "$mainUrl/page/$i/?s=${query.replace(" ", "+")}&orderby=date"
-            } else {
-                "$mainUrl/tag/$query/page/$i/"
-            }
+            } else if(query == "latest"){
+                "$mainUrl/page/$i/?orderby=date"
+            }else{"$mainUrl/tag/$query/page/$i/"}
 
             val results = app.get(url, interceptor = cfInterceptor).document
                 .select("div.row div div.post").mapNotNull {
