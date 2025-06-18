@@ -28,11 +28,9 @@ class Pornhd3x : MainAPI() {
         "$mainUrl/studio/nubilefilms" to "Nubile Films",
         "$mainUrl/studio/teamskeet" to "Team Skeet",
         "$mainUrl/studio/mylf" to "Mylf",
-        "$mainUrl/studio/perversefamily" to "Perverse Family",
-        "$mainUrl/studio/vixen" to "Vixen",
-        "$mainUrl/studio/netvideogirls" to "Net Video Girls",
-        "$mainUrl/studio/digitalplayground" to "DigitalPlayground",
-        "$mainUrl/studio/babes" to "Babes",
+        "$mainUrl/search/Vixen" to "Vixen",
+        "$mainUrl/search/netvideogirls" to "Net Video Girls",
+        "$mainUrl/search/digitalplayground" to "DigitalPlayground",
         "$mainUrl/studio/fakehub" to "Fakehub",
         "$mainUrl/studio/naughtyamerica" to "Naughty America"
 
@@ -74,6 +72,7 @@ class Pornhd3x : MainAPI() {
         val posterUrl = when {
             "trafficdeposit" in originalUrl -> "https:$originalUrl"
             "https:" in originalUrl -> originalUrl
+            "http://pornhd3x.tv/Cms_Data/" in originalUrl -> originalUrl
             else -> "https:" + originalUrl.replace("/Cms_Data", "//www9.pornhd3x.tv/cms_data")
         }
 
