@@ -20,7 +20,7 @@ class Pornhd3x : MainAPI() {
 
     override val mainPage = mainPageOf(
         "latest" to "Latest Videos",
-        "$mainUrl/studio/bangbros" to "Bang Bros",
+        "$mainUrl/studio/bang-bros" to "Bang Bros",
         "$mainUrl/studio/brazzers" to "Brazzers",
         "$mainUrl/studio/realitykings" to "Reality Kings",
         "$mainUrl/search/pervmom" to "Pervmom",
