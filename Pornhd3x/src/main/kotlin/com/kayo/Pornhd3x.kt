@@ -5,7 +5,11 @@ import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.cloudstream3.utils.*
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.jsoup.nodes.Element
+import java.io.IOException
+import java.security.MessageDigest
 
 class Pornhd3x : MainAPI() {
     override var mainUrl = "https://www9.pornhd3x.tv"
@@ -16,12 +20,12 @@ class Pornhd3x : MainAPI() {
     override val supportedTypes = setOf(TvType.NSFW)
 
     override val mainPage = mainPageOf(
-        "latest" to "Latest Video",
-        "$mainUrl/c/bangbros" to "Bang Bros",
-        "$mainUrl/c/brazzers" to "Brazzers",
-        "$mainUrl/c/realitykings" to "Reality Kings",
-        "$mainUrl/c/blacked" to "Blacked",
-        "$mainUrl/c/pervmom" to "Pervmom",
+        "latest" to "Latest Videos",
+        "$mainUrl/studio/bangbros" to "Bang Bros",
+        "$mainUrl/studio/brazzers" to "Brazzers",
+        "$mainUrl/studio/realitykings" to "Reality Kings",
+        "$mainUrl/studio/blacked" to "Blacked",
+        "$mainUrl/studio/pervmom" to "Pervmom",
 
         )
 
@@ -33,7 +37,7 @@ class Pornhd3x : MainAPI() {
             "$mainUrl/premium-porn-hd/page-$page"
 
         } else {
-            "${request.data}/page/$page"
+            "${request.data}/page-$page"
         }
 
         val document = app.get(targetUrl).document
@@ -76,7 +80,7 @@ class Pornhd3x : MainAPI() {
             val searchUrl = if (query == "latest") "$mainUrl/premium-porn-hd/page-$i" else "$mainUrl/search/${query}/page-$i"
             val document = app.get(searchUrl).document
             val results =
-                document.select("div.videos-list > article")
+                document.select("div.ml-item a")
                     .mapNotNull {
                         it.toSearchResult()
                     }
@@ -88,17 +92,16 @@ class Pornhd3x : MainAPI() {
 
     override suspend fun load(url: String): LoadResponse {
         val document = app.get(url).document
-
-        val title = document.selectFirst("div.title-views > h1")?.text()?.trim().toString()
-        val poster =
-            fixUrlNull(document.selectFirst("meta[property=og:image]")?.attr("content").toString())
-        val tags = document.select("div.tags-list > i").map { it.text() }
-        val description = document.select("div#rmjs-1 p:nth-child(1) > br").text().trim()
+        val info = document.selectFirst("div.mvi-content")!!
+        val title = info.selectFirst("div.mvic-desc > h3")!!.text()
+        val poster = document.selectFirst("meta[property=\"og:image\"]")?.attr("content")?.replace("http://brazzers3x.com/xxxfree", "https://xxxfree")?.replace("http", "https")?.replace("brazzers3x.com", "pornhd3x.tv")
+        val tags = document.select("div#mv-keywords a").map { it!!.text() }
+        val description = info.selectFirst("div.desc")!!.text()
         val actors =
-            document.select("div#rmjs-1 p:nth-child(1) a:nth-child(2) > strong").map { it.text() }
+            info.select("div.mvic-info div.mvici-left p:contains(Actor:) a").map { it!!.text() }
 
         val recommendations =
-            document.select("div.videos-list > article").mapNotNull {
+            document.select("div.ml-item a").mapNotNull {
                 it.toSearchResult()
             }
 
@@ -117,25 +120,51 @@ class Pornhd3x : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
+        val document = app.get(data).document
+        val uuid = document.selectFirst("input#uuid")?.attr("value") ?: return false
 
-        val iframe = app.get(data).document.select("div.responsive-player iframe").attr("src")
+        val characters = "abcdefghijklmnopqrstuvwxyz123456789"
+        val generatedId = (1..6).map { characters.random() }.joinToString("")
+        val videoUrl = geturl(uuid, generatedId) ?: return false
 
-        if (iframe.startsWith(mainUrl)) {
-            val video = app.get(iframe, referer = data).document.select("video source").attr("src")
-            callback.invoke(
-                newExtractorLink(
-                    this.name,
-                    this.name,
-                    video,
-                    INFER_TYPE
-                ) {
-                    this.referer = "$mainUrl/"
-                }
-            )
-        } else {
-            loadExtractor(iframe, "$mainUrl/", subtitleCallback, callback)
-        }
+        callback.invoke(
+            newExtractorLink(
+                name,
+                name,
+                videoUrl,
+                ExtractorLinkType.M3U8 // or "MP4", depending on what the link actually is
+            ) {
+                this.referer = data
+            }
+        )
 
         return true
     }
+
+    fun geturl(uuid: String, id: String): String? {
+        val input = (uuid + id + "98126avrbi6m49vd7shxkn985")
+        val md = MessageDigest.getInstance("MD5")
+        val md5Bytes = md.digest(input.toByteArray())
+        val md5Hex = md5Bytes.joinToString("") { "%02x".format(it) }
+        val rurl = "https://www9.pornhd3x.tv/ajax/get_sources/$uuid/$md5Hex?count=1&mobile=true"
+        val cookie = "826avrbi6m49vd7shxkn985m${ uuid }k06twz87wwxtp3dqiicks2df=$id"
+        val client = OkHttpClient()
+        val request = Request.Builder()
+            .url(rurl)
+            .header("X-Requested-With", "XMLHttpRequest")
+            .header("Cookie", cookie)
+            .header("Accept", "application/json")
+            .build()
+        client.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) {
+                throw IOException("Unexpected code $response")
+            }
+            val responseData = response.body.string()
+            val regex = """(?<="file":")[^"]+""".toRegex()
+            val matchResult = regex.find(responseData)
+            val ur = matchResult?.value
+            return ur
+        }
+    }
+
 }
