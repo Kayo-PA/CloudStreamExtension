@@ -1,4 +1,4 @@
-version = 1.01
+version = 2
 
 cloudstream {
     authors     = listOf("Kayo")

@@ -1,9 +1,8 @@
-package com.CXXX
+package com.kayo
 
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.cloudstream3.utils.*
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -24,8 +23,18 @@ class Pornhd3x : MainAPI() {
         "$mainUrl/studio/bangbros" to "Bang Bros",
         "$mainUrl/studio/brazzers" to "Brazzers",
         "$mainUrl/studio/realitykings" to "Reality Kings",
-        "$mainUrl/studio/blacked" to "Blacked",
-        "$mainUrl/studio/pervmom" to "Pervmom",
+        "$mainUrl/search/pervmom" to "Pervmom",
+        "$mainUrl/studio/nubiles-porn" to "Nubiles Porn",
+        "$mainUrl/studio/nubilefilms" to "Nubile Films",
+        "$mainUrl/studio/teamskeet" to "Team Skeet",
+        "$mainUrl/studio/mylf" to "Mylf",
+        "$mainUrl/studio/perversefamily" to "Perverse Family",
+        "$mainUrl/studio/vixen" to "Vixen",
+        "$mainUrl/studio/netvideogirls" to "Net Video Girls",
+        "$mainUrl/studio/digitalplayground" to "DigitalPlayground",
+        "$mainUrl/studio/babes" to "Babes",
+        "$mainUrl/studio/fakehub" to "Fakehub",
+        "$mainUrl/studio/naughtyamerica" to "Naughty America"
 
         )
 
