@@ -14,7 +14,6 @@ class SxyPrn : MainAPI() {
     override val vpnStatus = VPNStatus.MightBeNeeded
     override val supportedTypes = setOf(TvType.NSFW)
 
-    // ✅ Hardcoded cookie headers
     private val cookieHeader = mapOf(
         "Cookie" to "cf_clearance=zBNuTtzboYKhXk4GlV9Fx5QEAUjAnWxkpfCrYABd83g-1750492283-1.2.1.1-Nx.GDie0e1yvycBSEdGu1F05PlR48JCDAjZB_x6SKRFIcE3jLmW0CG6ac3MNkvpuRTywxj56WSVHFEfWbfWjhwHr.D1PHnzKBYubHJ6pw309VWZ4U5YShBE9g7s.9srIcEq4sT1o3VWqsATB.I6U16HWYEeA4mXRXU742erCLVXfzEmm58dvL.UYoCQ1SJrhvatsBBH8G59d2iUgT1Ks0zHuHmpHZs1.bd8uHcSqwbKdy.Z6Ch4WQOLIVJmTFCp.76uvEi0fml5owUl0wmY6IjgUh8v5o.IgUQWCZF9iGB2r8a7Mln4vH2GEMh2v4BxWyJ.yIHXBvL9BeKOmgag2ZXi.Yzf.md9pvEMgETAQjI.RVdWQcDbHTilp1OBryztd; PHPSESSID=kefqs5aidh5ndo9k60gabhb41a;",
         "User-Agent" to USER_AGENT
