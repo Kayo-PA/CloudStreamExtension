@@ -1,8 +1,11 @@
 package com.CXXX
 
+import android.annotation.TargetApi
+import android.os.Build
 import com.lagradost.api.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.network.CloudflareKiller
 import org.jsoup.nodes.Element
 import com.lagradost.cloudstream3.utils.loadExtractor
 
@@ -28,6 +31,7 @@ class SxyPrn : MainAPI() {
         page: Int, request: MainPageRequest
     ): HomePageResponse {
         var pageStr = ((page - 1) * 30).toString()
+
 
         val document = if ("page=" in request.data) {
             app.get(request.data + pageStr).document
@@ -60,16 +64,37 @@ class SxyPrn : MainAPI() {
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.O)
     override suspend fun search(query: String): List<SearchResponse> {
+        val cookieRegex = Regex("(?<cookie>cf_clearance=.*?;\\s*PHPSESSID=.*?;?)", RegexOption.IGNORE_CASE)
+        val cookieMatch = cookieRegex.find(query)
+        val cookies = cookieMatch?.groups?.get("cookie")?.value?.trim()
+
+        // Remove cookie part from actual search query
+        val cleanedQuery = if (cookies != null) {
+            query.replace(cookieRegex, "").trim()
+        } else {
+            query
+        }
+
         val searchResponse = mutableListOf<SearchResponse>()
         for (i in 0 until 15) {
-            val searchParam = if (query == "latest") "NEW" else query
-            val document = app.get(
-                "$mainUrl/${searchParam.replace(" ", "-")}.html?page=${i * 30}"
+            val searchParam = if (cleanedQuery == "latest") "NEW" else cleanedQuery
+            val headers = if (cookies != null) {
+                mapOf("Cookie" to cookies)
+            } else {
+                emptyMap()
+            }
+
+            val doc = app.get(
+                "$mainUrl/${searchParam.replace(" ", "-")}.html?page=${i * 30}",
+                headers = headers
             ).document
-            val results = document.select("div.main_content div.post_el_small").mapNotNull {
+
+            val results = doc.select("div.main_content div.post_el_small").mapNotNull {
                 it.toSearchResult()
             }
+
             if (!searchResponse.containsAll(results)) {
                 searchResponse.addAll(results)
             } else {
@@ -79,6 +104,7 @@ class SxyPrn : MainAPI() {
         }
         return searchResponse
     }
+
 
     override suspend fun load(url: String): LoadResponse {
         val document = app.get(url).document
