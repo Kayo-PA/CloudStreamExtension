@@ -1,10 +1,13 @@
 package com.CXXX
 
+import android.annotation.TargetApi
+import android.os.Build
 import com.lagradost.api.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.loadExtractor
+import com.lagradost.cloudstream3.network.CloudflareKiller
 import org.jsoup.nodes.Element
+import com.lagradost.cloudstream3.utils.loadExtractor
 
 class SxyPrn : MainAPI() {
     override var mainUrl = "https://sxyprn.com"
@@ -13,11 +16,6 @@ class SxyPrn : MainAPI() {
     override val hasDownloadSupport = true
     override val vpnStatus = VPNStatus.MightBeNeeded
     override val supportedTypes = setOf(TvType.NSFW)
-
-    private val cookieHeader = mapOf(
-        "Cookie" to "cf_clearance=hfX_W1uQFzjxk.rIy6MxssmxPheBiaKe02oaL8r.UJk-1750495406-1.2.1.1-aQsVgqM0Ngu13ein9RJmNpuYNhyWa8iiKDTMGCG6vAEBf9UJtwsNHMBslZNCR0pNcbuEsFABdRk02mR5EyK5t4peauIu87Kflo9ltn_CIPSZkeRu9FGxxy8TiCV.Qs9uRxzk0f7epmfeLS3LHP4GUCYYr21UCnydKJ8KkC44P0Trqwx0LCGFCkman2rHrkWbHl0T6V1m8pndrbINAFkctQsa1BjUVKnxnunSg7kdmLoplDsLALtAeGlwBSGsVRT.YmE75zh3hWQb5PRR7zvaUi_ptHDRSxNFMUXh2p_zWroCjmC5JS7L5dAeRfRx61fjK5yiap3pJ7Kx1KpBq4s2QQQOZYeeoOvmezFp0nXY2kHAiJonQlWkckqtrb90_Raj;",
-        "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36 Edg/137.0.0.0"
-    )
 
     override val mainPage = mainPageOf(
         "$mainUrl/new.html?page=" to "New Videos",
@@ -29,25 +27,27 @@ class SxyPrn : MainAPI() {
         "$mainUrl/popular/top-viewed.html?p=all" to "Popular - All Time"
     )
 
-    override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
+    override suspend fun getMainPage(
+        page: Int, request: MainPageRequest
+    ): HomePageResponse {
         var pageStr = ((page - 1) * 30).toString()
 
+
         val document = if ("page=" in request.data) {
-            app.get(request.data + pageStr, headers = cookieHeader).document
+            app.get(request.data + pageStr).document
         } else if ("/blog/" in request.data) {
             pageStr = ((page - 1) * 20).toString()
-            app.get(request.data.replace(".html", "$pageStr.html"), headers = cookieHeader).document
+            app.get(request.data.replace(".html", "$pageStr.html")).document
         } else {
-            app.get(request.data.replace(".html", ".html/$pageStr"), headers = cookieHeader).document
+            app.get(request.data.replace(".html", ".html/$pageStr")).document
         }
-
         val home = document.select("div.main_content div.post_el_small").mapNotNull {
             it.toSearchResult()
         }
-
         return newHomePageResponse(
-            list = HomePageList(request.name, home, isHorizontalImages = true),
-            hasNext = true
+            list = HomePageList(
+                name = request.name, list = home, isHorizontalImages = true
+            ), hasNext = true
         )
     }
 
@@ -55,24 +55,40 @@ class SxyPrn : MainAPI() {
         val title = this.selectFirst("div.post_text")?.text() ?: return null
         val href = fixUrl(this.selectFirst("a.js-pop")!!.attr("href"))
         var posterUrl = fixUrl(this.select("div.vid_container div.post_vid_thumb img").attr("src"))
-        if (posterUrl.isBlank()) {
-            posterUrl = fixUrl(this.select("div.vid_container div.post_vid_thumb img").attr("data-src"))
+        if (posterUrl == "") {
+            posterUrl =
+                fixUrl(this.select("div.vid_container div.post_vid_thumb img").attr("data-src"))
         }
         return newMovieSearchResponse(title, href, TvType.Movie) {
             this.posterUrl = posterUrl
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.O)
     override suspend fun search(query: String): List<SearchResponse> {
+        val cookieRegex = Regex("cf_clearance=([^;\\s]+)", RegexOption.IGNORE_CASE)
+        val cookieMatch = cookieRegex.find(query)
+        val cfClearance = cookieMatch?.value?.trim()
+
+        // Remove the cookie from the query so only the actual search term remains
+        val cleanedQuery = query.replace(cookieRegex, "").trim()
+
         val searchResponse = mutableListOf<SearchResponse>()
         for (i in 0 until 15) {
-            val searchParam = if (query == "latest") "NEW" else query
-            val document = app.get(
+            val searchParam = if (cleanedQuery == "latest") "NEW" else cleanedQuery
+
+            val headers = mutableMapOf<String, String>()
+            headers["User-Agent"] = "Mozilla/5.0 (Android 13; Mobile; rv:139.0) Gecko/139.0 Firefox/139.0"
+            if (cfClearance != null) {
+                headers["Cookie"] = cfClearance
+            }
+
+            val doc = app.get(
                 "$mainUrl/${searchParam.replace(" ", "-")}.html?page=${i * 30}",
-                headers = cookieHeader
+                headers = headers
             ).document
 
-            val results = document.select("div.main_content div.post_el_small").mapNotNull {
+            val results = doc.select("div.main_content div.post_el_small").mapNotNull {
                 it.toSearchResult()
             }
 
@@ -81,15 +97,23 @@ class SxyPrn : MainAPI() {
             } else {
                 break
             }
+
             if (results.isEmpty()) break
         }
+
         return searchResponse
     }
 
+
+
     override suspend fun load(url: String): LoadResponse {
-        val document = app.get(url, headers = cookieHeader).document
+        val document = app.get(url).document
         val title = document.selectFirst("div.post_text")?.text()?.trim().toString()
-        val poster = fixUrlNull(document.selectFirst("meta[property=og:image]")?.attr("content"))
+        val poster = fixUrlNull(
+            document.selectFirst("meta[property=og:image]")
+                ?.attr("content")
+        )
+
         val recommendations = document.select("div.main_content div div.post_el_small").mapNotNull {
             it.toSearchResult()
         }
@@ -100,13 +124,28 @@ class SxyPrn : MainAPI() {
         }
     }
 
+    private fun updateUrl(arg: MutableList<String>): MutableList<String> {
+        arg[5] =
+            (Integer.parseInt(arg[5]) - (generateNumber(arg[6]) + generateNumber(arg[7]))).toString()
+        return arg
+    }
+
+    private fun generateNumber(arg: String): Int {
+        val str = arg.replace(Regex("\\D"), "")
+        var sut = 0
+        for (element in str) {
+            sut += Integer.parseInt(element.toString(), 10)
+        }
+        return sut
+    }
+
     override suspend fun loadLinks(
         data: String,
         isCasting: Boolean,
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        val document = app.get(data, headers = cookieHeader).document
+        val document = app.get(data).document
         val div = document.select(".post_text").first() ?: return false
         val a = div.select(".extlink")
         a.map {
@@ -114,19 +153,6 @@ class SxyPrn : MainAPI() {
         }
         return true
     }
-
-    // Obfuscated URL handler (used by the site)
-    private fun updateUrl(arg: MutableList<String>): MutableList<String> {
-        arg[5] = (Integer.parseInt(arg[5]) - (generateNumber(arg[6]) + generateNumber(arg[7]))).toString()
-        return arg
-    }
-
-    private fun generateNumber(arg: String): Int {
-        val str = arg.replace(Regex("\\D"), "")
-        var sum = 0
-        for (ch in str) {
-            sum += ch.toString().toInt()
-        }
-        return sum
-    }
 }
+
+
