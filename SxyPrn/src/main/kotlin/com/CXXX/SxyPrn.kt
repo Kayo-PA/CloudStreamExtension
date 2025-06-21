@@ -15,8 +15,8 @@ class SxyPrn : MainAPI() {
     override val supportedTypes = setOf(TvType.NSFW)
 
     private val cookieHeader = mapOf(
-        "Cookie" to "cf_clearance=zBNuTtzboYKhXk4GlV9Fx5QEAUjAnWxkpfCrYABd83g-1750492283-1.2.1.1-Nx.GDie0e1yvycBSEdGu1F05PlR48JCDAjZB_x6SKRFIcE3jLmW0CG6ac3MNkvpuRTywxj56WSVHFEfWbfWjhwHr.D1PHnzKBYubHJ6pw309VWZ4U5YShBE9g7s.9srIcEq4sT1o3VWqsATB.I6U16HWYEeA4mXRXU742erCLVXfzEmm58dvL.UYoCQ1SJrhvatsBBH8G59d2iUgT1Ks0zHuHmpHZs1.bd8uHcSqwbKdy.Z6Ch4WQOLIVJmTFCp.76uvEi0fml5owUl0wmY6IjgUh8v5o.IgUQWCZF9iGB2r8a7Mln4vH2GEMh2v4BxWyJ.yIHXBvL9BeKOmgag2ZXi.Yzf.md9pvEMgETAQjI.RVdWQcDbHTilp1OBryztd; PHPSESSID=kefqs5aidh5ndo9k60gabhb41a;",
-        "User-Agent" to USER_AGENT
+        "Cookie" to "cf_clearance=hfX_W1uQFzjxk.rIy6MxssmxPheBiaKe02oaL8r.UJk-1750495406-1.2.1.1-aQsVgqM0Ngu13ein9RJmNpuYNhyWa8iiKDTMGCG6vAEBf9UJtwsNHMBslZNCR0pNcbuEsFABdRk02mR5EyK5t4peauIu87Kflo9ltn_CIPSZkeRu9FGxxy8TiCV.Qs9uRxzk0f7epmfeLS3LHP4GUCYYr21UCnydKJ8KkC44P0Trqwx0LCGFCkman2rHrkWbHl0T6V1m8pndrbINAFkctQsa1BjUVKnxnunSg7kdmLoplDsLALtAeGlwBSGsVRT.YmE75zh3hWQb5PRR7zvaUi_ptHDRSxNFMUXh2p_zWroCjmC5JS7L5dAeRfRx61fjK5yiap3pJ7Kx1KpBq4s2QQQOZYeeoOvmezFp0nXY2kHAiJonQlWkckqtrb90_Raj;",
+        "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36 Edg/137.0.0.0"
     )
 
     override val mainPage = mainPageOf(
