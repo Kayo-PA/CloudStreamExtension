@@ -7,30 +7,30 @@ import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.cloudstream3.utils.*
 import org.jsoup.nodes.Element
 
-class Dramafren : MainAPI() {
-    override var mainUrl = "https://dramafren.net"
-    override var name = "Dramafren"
+class Yandex : MainAPI() {
+    override var mainUrl = "https://yandex.com/video"
+    override var name = "Yandex"
     override val hasMainPage = true
     override val hasDownloadSupport = true
     override val vpnStatus = VPNStatus.MightBeNeeded
-    override val supportedTypes = setOf(TvType.AsianDrama)
+    override val supportedTypes = setOf(TvType.Others)
 
     override val mainPage = mainPageOf(
-        "$mainUrl/series/" to "Latest Drama",
-        "$mainUrl/popular/" to "Popular",
-//        "$mainUrl/" to "Random Drama",
+        "$mainUrl/search?text=latest+chinese+shorts+drama" to "Latest Drama",
+        "$mainUrl/search?text=popular+chinese+shorts+drama" to "Popular",
+        "$mainUrl/search?text=random+chinese+shorts+drama" to "Random Drama",
         )
 
     override suspend fun getMainPage(
         page: Int,
         request: MainPageRequest
     ): HomePageResponse {
-        val targetUrl = "${request.data}page/$page/"
+        val targetUrl = "${request.data}&p=$page"
 
 
         val document = app.get(targetUrl).document
         val home =
-            document.select("article.box")
+            document.select("li.SearchBlock")
                 .mapNotNull {
                     it.toSearchResult()
                 }
@@ -45,9 +45,9 @@ class Dramafren : MainAPI() {
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        val title = this.selectFirst("h2.entry-title")?.text() ?: return null
-        val href = fixUrl(this.selectFirst("a.tip")!!.attr("href"))
-        val posterUrl = this.select("img.wp-post-image").attr("src")
+        val title = this.selectFirst("a.VideoSnippet-Title")?.attr("title") ?: return null
+        val href = fixUrl(this.selectFirst("a.VideoSnippet-Title")!!.attr("href"))
+        val posterUrl = this.select("video.VideoThumb3-Video").attr("poster")
         return newMovieSearchResponse(title, href, TvType.Movie) {
             this.posterUrl = posterUrl
         }
@@ -58,9 +58,9 @@ class Dramafren : MainAPI() {
         val searchResponse = mutableListOf<SearchResponse>()
         for (i in 1..5) {
             val searchParam = if (query == "latest") "" else query
-            val document = app.get("$mainUrl/page/$i/?s=$searchParam").document
+            val document = app.get("$mainUrl/search?text=${searchParam.replace(" ","+")}&p=$i").document
             val results =
-                document.select("article.box")
+                document.select("li.SearchBlock")
                     .mapNotNull {
                         it.toSearchResult()
                     }
@@ -73,7 +73,7 @@ class Dramafren : MainAPI() {
     override suspend fun load(url: String): LoadResponse {
         val document = app.get(url).document
 
-        val title = document.selectFirst("h1.entry-title")?.text()?.trim().toString()
+        val title = document.selectFirst("h2.iatUaVbAyPbOfNZ0-DetailsTitle")?.text()?.trim().toString()
         val poster =
             fixUrlNull(document.selectFirst("meta[property=og:image]")?.attr("content").toString())
         val recommendations =
