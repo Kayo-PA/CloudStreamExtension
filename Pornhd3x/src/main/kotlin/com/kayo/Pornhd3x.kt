@@ -85,7 +85,7 @@ class Pornhd3x : MainAPI() {
     override suspend fun search(query: String): List<SearchResponse> {
         val searchResponse = mutableListOf<SearchResponse>()
         for (i in 1..5) {
-            val searchUrl = if (query == "latest") "$mainUrl/premium-porn-hd/page-$i" else "$mainUrl/search/${query}/page-$i"
+            val searchUrl = if (query == "latest") "$mainUrl/premium-porn-hd/page-$i" else "$mainUrl/search/${query.replace(" ","%20")}/page-$i"
             val document = app.get(searchUrl).document
             val results =
                 document.select("div.ml-item a")

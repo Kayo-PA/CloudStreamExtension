@@ -1,11 +1,10 @@
-package com.CXXX
+package com.kayo
 
 import android.annotation.TargetApi
 import android.os.Build
-import com.lagradost.api.Log
 import com.lagradost.cloudstream3.*
-import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.network.CloudflareKiller
+import com.lagradost.cloudstream3.utils.ExtractorLink
 import org.jsoup.nodes.Element
 import com.lagradost.cloudstream3.utils.loadExtractor
 
@@ -16,6 +15,7 @@ class SxyPrn : MainAPI() {
     override val hasDownloadSupport = true
     override val vpnStatus = VPNStatus.MightBeNeeded
     override val supportedTypes = setOf(TvType.NSFW)
+    private val cfInterceptor = CloudflareKiller()
 
     override val mainPage = mainPageOf(
         "$mainUrl/new.html?page=" to "New Videos",
@@ -34,12 +34,12 @@ class SxyPrn : MainAPI() {
 
 
         val document = if ("page=" in request.data) {
-            app.get(request.data + pageStr).document
+            app.get(request.data + pageStr, interceptor = cfInterceptor, timeout = 100L).document
         } else if ("/blog/" in request.data) {
             pageStr = ((page - 1) * 20).toString()
-            app.get(request.data.replace(".html", "$pageStr.html")).document
+            app.get(request.data.replace(".html", "$pageStr.html"), interceptor = cfInterceptor, timeout = 100L).document
         } else {
-            app.get(request.data.replace(".html", ".html/$pageStr")).document
+            app.get(request.data.replace(".html", ".html/$pageStr"), interceptor = cfInterceptor, timeout = 100L).document
         }
         val home = document.select("div.main_content div.post_el_small").mapNotNull {
             it.toSearchResult()
@@ -86,7 +86,7 @@ class SxyPrn : MainAPI() {
             val doc = app.get(
                 "$mainUrl/${searchParam.replace(" ", "-")}.html?page=${i * 30}",
                 headers = headers
-            ).document
+                , interceptor = cfInterceptor, timeout = 100L).document
 
             val results = doc.select("div.main_content div.post_el_small").mapNotNull {
                 it.toSearchResult()
@@ -107,7 +107,7 @@ class SxyPrn : MainAPI() {
 
 
     override suspend fun load(url: String): LoadResponse {
-        val document = app.get(url).document
+        val document = app.get(url, interceptor = cfInterceptor, timeout = 100L).document
         val title = document.selectFirst("div.post_text")?.text()?.trim().toString()
         val poster = fixUrlNull(
             document.selectFirst("meta[property=og:image]")
@@ -145,7 +145,7 @@ class SxyPrn : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        val document = app.get(data).document
+        val document = app.get(data, interceptor = cfInterceptor, timeout = 100L).document
         val div = document.select(".post_text").first() ?: return false
         val a = div.select(".extlink")
         a.map {
