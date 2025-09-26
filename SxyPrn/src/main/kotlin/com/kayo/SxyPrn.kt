@@ -3,9 +3,13 @@ package com.kayo
 import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.network.CloudflareKiller
+import com.lagradost.cloudstream3.utils.AppUtils
 import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
+import com.lagradost.cloudstream3.utils.Qualities
 import org.jsoup.nodes.Element
 import com.lagradost.cloudstream3.utils.loadExtractor
+import com.lagradost.cloudstream3.utils.newExtractorLink
 
 class SxyPrn : MainAPI() {
     override var mainUrl = "https://sxyprn.com"
@@ -117,20 +121,20 @@ class SxyPrn : MainAPI() {
         }
     }
 
-//    private fun updateUrl(arg: MutableList<String>): MutableList<String> {
-//        arg[5] =
-//            (Integer.parseInt(arg[5]) - (generateNumber(arg[6]) + generateNumber(arg[7]))).toString()
-//        return arg
-//    }
+    private fun updateUrl(arg: MutableList<String>): MutableList<String> {
+        arg[5] =
+            (Integer.parseInt(arg[5]) - (generateNumber(arg[6]) + generateNumber(arg[7]))).toString()
+        return arg
+    }
 
-//    private fun generateNumber(arg: String): Int {
-//        val str = arg.replace(Regex("\\D"), "")
-//        var sut = 0
-//        for (element in str) {
-//            sut += Integer.parseInt(element.toString(), 10)
-//        }
-//        return sut
-//    }
+    private fun generateNumber(arg: String): Int {
+        val str = arg.replace(Regex("\\D"), "")
+        var sut = 0
+        for (element in str) {
+            sut += Integer.parseInt(element.toString(), 10)
+        }
+        return sut
+    }
 
     override suspend fun loadLinks(
         data: String,
@@ -138,12 +142,50 @@ class SxyPrn : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        val document = app.get(data, interceptor = cfInterceptor, timeout = 100L).document
-        val div = document.select(".post_text").first() ?: return false
-        val a = div.select(".extlink")
-        a.map {
-            loadExtractor(it.attr("href"), null, subtitleCallback, callback)
-        }
+        val document = app.get(data).document
+        runAllAsync(
+            {
+                document.select("div.post_el_wrap a.extlink").amap {
+                    loadExtractor(it.attr("href"), "", subtitleCallback, callback)
+                }
+            },
+            {
+                val torrentLink = document.select("a.mpc_btn").attr("href")
+                val doc = app.get(torrentLink).document
+                val magnetLink = doc.select("a.md_btn").attr("href")
+                callback.invoke(
+                    newExtractorLink(
+                        "$name[Magnet]",
+                        "$name[Magnet]",
+                        magnetLink,
+                        ExtractorLinkType.MAGNET
+                    )
+                )
+            },
+        )
+
+         val parsed = AppUtils.parseJson<Map<String, String>>(
+             document.select("span.vidsnfo").attr("data-vnfo")
+         )
+         parsed[parsed.keys.toList()[0]]
+         var url = parsed[parsed.keys.toList()[0]].toString()
+
+         var tmp = url.split("/").toMutableList()
+         tmp[1] += "8"
+         tmp = updateUrl(tmp)
+
+         url = fixUrl(tmp.joinToString("/"))
+
+         callback.invoke(
+             newExtractorLink(
+                 source = this.name,
+                 name = this.name,
+                 url = url
+             ) {
+                 this.referer = ""
+                 this.quality = Qualities.Unknown.value
+             }
+         )
         return true
     }
 }
