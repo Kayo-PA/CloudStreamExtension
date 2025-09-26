@@ -85,7 +85,7 @@ class SxyPrn : MainAPI() {
                 timeout = 100L
             ).document
             Log.e("sxyprnLog", doc.toString())
-            val results = doc.select("div.main_content div.post_el_small").mapNotNull {
+            val results = doc.select("div.main_content div.post_el_small_mob").mapNotNull {
                 it.toSearchResult()
             }
 
