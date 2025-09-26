@@ -140,9 +140,17 @@ class Pornhd3x : MainAPI() {
                 name,
                 name,
                 videoUrl,
-                ExtractorLinkType.M3U8 // or "MP4", depending on what the link actually is
+                type=ExtractorLinkType.M3U8
             ) {
+                val cookie = "826avrbi6m49vd7shxkn985m${ uuid }k06twz87wwxtp3dqiicks2df=$generatedId"
                 this.referer = data
+                this.headers = mapOf(
+                    "X-Requested-With" to "XMLHttpRequest",
+                    "Accept" to "application/json",
+                    "Cookie" to cookie,
+                    "Referer" to url,
+                    "User-Agent" to USER_AGENT
+                )
             }
         )
 
