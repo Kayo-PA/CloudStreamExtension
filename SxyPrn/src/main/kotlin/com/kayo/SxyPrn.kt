@@ -65,25 +65,14 @@ class SxyPrn : MainAPI() {
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.O)
     override suspend fun search(query: String): List<SearchResponse> {
-        val cookieRegex = Regex("cf_clearance=([^;\\s]+)", RegexOption.IGNORE_CASE)
-        val cookieMatch = cookieRegex.find(query)
-        val cfClearance = cookieMatch?.value?.trim()
-
-        // Remove the cookie from the query so only the actual search term remains
-        val cleanedQuery = query.replace(cookieRegex, "").trim()
 
         val searchResponse = mutableListOf<SearchResponse>()
         for (i in 0 until 15) {
-            val searchParam = if (cleanedQuery == "latest") "NEW" else cleanedQuery
-
+            val searchParam = if (query == "latest") "NEW" else query
+            Log.e("sxyprnLog", searchParam)
             val headers = mutableMapOf<String, String>()
             headers["User-Agent"] = "Mozilla/5.0 (Android 13; Mobile; rv:139.0) Gecko/139.0 Firefox/139.0"
-            if (cfClearance != null) {
-                headers["Cookie"] = cfClearance
-            }
-
             val doc = app.get(
                 "$mainUrl/${searchParam.replace(" ", "-")}.html?page=${i * 30}",
                 headers = headers
