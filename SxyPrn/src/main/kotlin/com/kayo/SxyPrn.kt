@@ -59,12 +59,12 @@ class SxyPrn : MainAPI() {
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        val title = this.selectFirst("post_el_small_mob_title b.post_b_text_el")?.text() ?: return null
+        val title = this.selectFirst("div.post_text")?.text() ?: return null
         val href = fixUrl(this.selectFirst("a.js-pop")!!.attr("href"))
-        var posterUrl = fixUrl(this.select("post_el_small_mob_ls img").attr("src"))
+        var posterUrl = fixUrl(this.select("div.vid_container div.post_vid_thumb img.mini_post_vid_thumb").attr("src"))
         if (posterUrl == "") {
             posterUrl =
-                fixUrl(this.select("post_el_small_mob_ls img").attr("data-src"))
+                fixUrl(this.select("div.vid_container div.post_vid_thumb img.mini_post_vid_thumb").attr("data-src"))
         }
         return newMovieSearchResponse(title, href, TvType.Movie) {
             this.posterUrl = posterUrl
@@ -80,7 +80,7 @@ class SxyPrn : MainAPI() {
                 url="$mainUrl/${searchParam.replace(" ", "-")}.html?page=${i * 30}",
                 interceptor = cfInterceptor).document
             Log.e("sxyprnLog", doc.toString())
-            val results = doc.select("post_el_small").mapNotNull {
+            val results = doc.select("div.main_content div.post_el_small").mapNotNull {
                 it.toSearchResult()
             }
 
