@@ -36,9 +36,17 @@ class SxyPrn : MainAPI() {
             app.get(request.data + pageStr, interceptor = cfInterceptor, timeout = 100L).document
         } else if ("/blog/" in request.data) {
             pageStr = ((page - 1) * 20).toString()
-            app.get(request.data.replace(".html", "$pageStr.html"), interceptor = cfInterceptor, timeout = 100L).document
+            app.get(
+                request.data.replace(".html", "$pageStr.html"),
+                interceptor = cfInterceptor,
+                timeout = 100L
+            ).document
         } else {
-            app.get(request.data.replace(".html", ".html/$pageStr"), interceptor = cfInterceptor, timeout = 100L).document
+            app.get(
+                request.data.replace(".html", ".html/$pageStr"),
+                interceptor = cfInterceptor,
+                timeout = 100L
+            ).document
         }
         val home = document.select("div.main_content div.post_el_small").mapNotNull {
             it.toSearchResult()
@@ -68,12 +76,14 @@ class SxyPrn : MainAPI() {
         val searchResponse = mutableListOf<SearchResponse>()
         for (i in 0 until 15) {
             val searchParam = if (query == "latest") "NEW" else query
-            Log.e("sxyprnLog", searchParam)
-            val headers = mutableMapOf<String, String>()
-            headers["User-Agent"] = "Mozilla/5.0 (Android 13; Mobile; rv:139.0) Gecko/139.0 Firefox/139.0"
+            val headers =
+                mapOf("User-Agent" to "Mozilla/5.0 (Android 13; Mobile; rv:139.0) Gecko/139.0 Firefox/139.0")
             val doc = app.get(
-                "$mainUrl/${searchParam.replace(" ", "-")}.html?page=${i * 30}",
-                headers = headers).document
+                url="$mainUrl/${searchParam.replace(" ", "-")}.html?page=${i * 30}",
+                headers = headers,
+                interceptor = cfInterceptor,
+                timeout = 100L
+            ).document
             Log.e("sxyprnLog", doc.toString())
             val results = doc.select("div.main_content div.post_el_small").mapNotNull {
                 it.toSearchResult()
@@ -90,7 +100,6 @@ class SxyPrn : MainAPI() {
 
         return searchResponse
     }
-
 
 
     override suspend fun load(url: String): LoadResponse {
