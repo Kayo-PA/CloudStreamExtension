@@ -33,22 +33,20 @@ class SxyPrn : MainAPI() {
 
 
         val document = if ("page=" in request.data) {
-            app.get(request.data + pageStr, interceptor = cfInterceptor, timeout = 100L).document
+            app.get(request.data + pageStr, interceptor = cfInterceptor).document
         } else if ("/blog/" in request.data) {
             pageStr = ((page - 1) * 20).toString()
             app.get(
                 request.data.replace(".html", "$pageStr.html"),
                 interceptor = cfInterceptor,
-                timeout = 100L
             ).document
         } else {
             app.get(
                 request.data.replace(".html", ".html/$pageStr"),
                 interceptor = cfInterceptor,
-                timeout = 100L
             ).document
         }
-        val home = document.select("div.main_content div.post_el_small").mapNotNull {
+        val home = document.select("a.js-pop").mapNotNull {
             it.toSearchResult()
         }
         return newHomePageResponse(
