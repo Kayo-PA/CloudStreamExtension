@@ -15,7 +15,6 @@ class SxyPrn : MainAPI() {
     override val vpnStatus = VPNStatus.MightBeNeeded
     override val supportedTypes = setOf(TvType.NSFW)
     private val cfInterceptor = CloudflareKiller()
-    private val newHeader = mapOf("User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0")
 
     override val mainPage = mainPageOf(
         "$mainUrl/new.html?page=" to "New Videos",
@@ -60,12 +59,12 @@ class SxyPrn : MainAPI() {
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        val title = this.selectFirst("div.post_text")?.text() ?: return null
-        val href = fixUrl(this.selectFirst("a.js-pop")!!.attr("href"))
-        var posterUrl = fixUrl(this.select("div.vid_container div.post_vid_thumb img.mini_post_vid_thumb").attr("src"))
+        val title = this.attr("title")
+        val href = fixUrl(this.attr("href"))
+        var posterUrl = fixUrl(this.select("div.post_el_small_mob_ls img").attr("src"))
         if (posterUrl == "") {
             posterUrl =
-                fixUrl(this.select("div.vid_container div.post_vid_thumb img.mini_post_vid_thumb").attr("data-src"))
+                fixUrl(this.select("div.post_el_small_mob_ls img").attr("data-src"))
         }
         return newMovieSearchResponse(title, href, TvType.Movie) {
             this.posterUrl = posterUrl
@@ -77,12 +76,16 @@ class SxyPrn : MainAPI() {
         val searchResponse = mutableListOf<SearchResponse>()
         for (i in 0 until 15) {
             val searchParam = if (query == "latest") "NEW" else query
+            val headers =
+                mapOf("User-Agent" to "Mozilla/5.0 (Android 13; Mobile; rv:139.0) Gecko/139.0 Firefox/139.0")
             val doc = app.get(
                 url="$mainUrl/${searchParam.replace(" ", "-")}.html?page=${i * 30}",
-                headers = newHeader,
-                interceptor = cfInterceptor).document
+                headers = headers,
+                interceptor = cfInterceptor,
+                timeout = 100L
+            ).document
             Log.e("sxyprnLog", doc.toString())
-            val results = doc.select("div.main_content div.post_el_small").mapNotNull {
+            val results = doc.select("a.js-pop").mapNotNull {
                 it.toSearchResult()
             }
 
