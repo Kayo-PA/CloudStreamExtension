@@ -1,5 +1,6 @@
 package com.kayo
 
+import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.utils.ExtractorLink
@@ -86,7 +87,9 @@ class Pornhd3x : MainAPI() {
         val searchResponse = mutableListOf<SearchResponse>()
         for (i in 1..5) {
             val searchUrl = if (query == "latest") "$mainUrl/premium-porn-hd/page-$i" else "$mainUrl/search/${query.replace(" ","%20")}/page-$i"
+            Log.e("pornhd3xLog", searchUrl)
             val document = app.get(searchUrl).document
+            Log.e("pornhd3xLog", document.toString())
             val results =
                 document.select("div.ml-item a")
                     .mapNotNull {

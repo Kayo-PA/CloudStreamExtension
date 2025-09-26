@@ -2,6 +2,7 @@ package com.kayo
 
 import android.annotation.TargetApi
 import android.os.Build
+import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.network.CloudflareKiller
 import com.lagradost.cloudstream3.utils.ExtractorLink
@@ -87,7 +88,7 @@ class SxyPrn : MainAPI() {
                 "$mainUrl/${searchParam.replace(" ", "-")}.html?page=${i * 30}",
                 headers = headers
                 , interceptor = cfInterceptor, timeout = 100L).document
-
+            Log.e("sxyprnLog", doc.toString())
             val results = doc.select("div.main_content div.post_el_small").mapNotNull {
                 it.toSearchResult()
             }
