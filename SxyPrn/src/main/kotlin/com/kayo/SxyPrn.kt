@@ -76,16 +76,11 @@ class SxyPrn : MainAPI() {
         val searchResponse = mutableListOf<SearchResponse>()
         for (i in 0 until 15) {
             val searchParam = if (query == "latest") "NEW" else query
-            val headers =
-                mapOf("User-Agent" to "Mozilla/5.0 (Android 13; Mobile; rv:139.0) Gecko/139.0 Firefox/139.0")
             val doc = app.get(
                 url="$mainUrl/${searchParam.replace(" ", "-")}.html?page=${i * 30}",
-                headers = headers,
-                interceptor = cfInterceptor,
-                timeout = 100L
-            ).document
+                interceptor = cfInterceptor).document
             Log.e("sxyprnLog", doc.toString())
-            val results = doc.select("a.js-pop").mapNotNull {
+            val results = doc.select("post_el_small").mapNotNull {
                 it.toSearchResult()
             }
 
