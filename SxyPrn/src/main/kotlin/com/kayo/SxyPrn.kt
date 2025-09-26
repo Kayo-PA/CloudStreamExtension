@@ -81,8 +81,7 @@ class SxyPrn : MainAPI() {
             val doc = app.get(
                 url="$mainUrl/${searchParam.replace(" ", "-")}.html?page=${i * 30}",
                 headers = headers,
-                interceptor = cfInterceptor,
-                timeout = 100L
+                interceptor = cfInterceptor
             ).document
             Log.e("sxyprnLog", doc.toString())
             val results = doc.select("a.js-pop").mapNotNull {
