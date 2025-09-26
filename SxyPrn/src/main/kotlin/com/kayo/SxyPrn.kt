@@ -1,7 +1,5 @@
 package com.kayo
 
-import android.annotation.TargetApi
-import android.os.Build
 import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.network.CloudflareKiller
@@ -75,8 +73,7 @@ class SxyPrn : MainAPI() {
             headers["User-Agent"] = "Mozilla/5.0 (Android 13; Mobile; rv:139.0) Gecko/139.0 Firefox/139.0"
             val doc = app.get(
                 "$mainUrl/${searchParam.replace(" ", "-")}.html?page=${i * 30}",
-                headers = headers
-                , interceptor = cfInterceptor, timeout = 100L).document
+                headers = headers).document
             Log.e("sxyprnLog", doc.toString())
             val results = doc.select("div.main_content div.post_el_small").mapNotNull {
                 it.toSearchResult()
@@ -114,20 +111,20 @@ class SxyPrn : MainAPI() {
         }
     }
 
-    private fun updateUrl(arg: MutableList<String>): MutableList<String> {
-        arg[5] =
-            (Integer.parseInt(arg[5]) - (generateNumber(arg[6]) + generateNumber(arg[7]))).toString()
-        return arg
-    }
+//    private fun updateUrl(arg: MutableList<String>): MutableList<String> {
+//        arg[5] =
+//            (Integer.parseInt(arg[5]) - (generateNumber(arg[6]) + generateNumber(arg[7]))).toString()
+//        return arg
+//    }
 
-    private fun generateNumber(arg: String): Int {
-        val str = arg.replace(Regex("\\D"), "")
-        var sut = 0
-        for (element in str) {
-            sut += Integer.parseInt(element.toString(), 10)
-        }
-        return sut
-    }
+//    private fun generateNumber(arg: String): Int {
+//        val str = arg.replace(Regex("\\D"), "")
+//        var sut = 0
+//        for (element in str) {
+//            sut += Integer.parseInt(element.toString(), 10)
+//        }
+//        return sut
+//    }
 
     override suspend fun loadLinks(
         data: String,
