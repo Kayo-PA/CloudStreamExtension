@@ -15,6 +15,7 @@ class SxyPrn : MainAPI() {
     override val vpnStatus = VPNStatus.MightBeNeeded
     override val supportedTypes = setOf(TvType.NSFW)
     private val cfInterceptor = CloudflareKiller()
+    private val newHeader = mapOf("User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0")
 
     override val mainPage = mainPageOf(
         "$mainUrl/new.html?page=" to "New Videos",
@@ -78,6 +79,7 @@ class SxyPrn : MainAPI() {
             val searchParam = if (query == "latest") "NEW" else query
             val doc = app.get(
                 url="$mainUrl/${searchParam.replace(" ", "-")}.html?page=${i * 30}",
+                headers = newHeader,
                 interceptor = cfInterceptor).document
             Log.e("sxyprnLog", doc.toString())
             val results = doc.select("div.main_content div.post_el_small").mapNotNull {
