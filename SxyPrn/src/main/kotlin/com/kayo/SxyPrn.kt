@@ -59,12 +59,12 @@ class SxyPrn : MainAPI() {
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        val title = this.selectFirst("div.post_text")?.text() ?: return null
+        val title = this.selectFirst("post_el_small_mob_title b.post_b_text_el")?.text() ?: return null
         val href = fixUrl(this.selectFirst("a.js-pop")!!.attr("href"))
-        var posterUrl = fixUrl(this.select("div.vid_container div.post_vid_thumb img").attr("src"))
+        var posterUrl = fixUrl(this.select("post_el_small_mob_ls img").attr("src"))
         if (posterUrl == "") {
             posterUrl =
-                fixUrl(this.select("div.vid_container div.post_vid_thumb img").attr("data-src"))
+                fixUrl(this.select("post_el_small_mob_ls img").attr("data-src"))
         }
         return newMovieSearchResponse(title, href, TvType.Movie) {
             this.posterUrl = posterUrl
@@ -85,7 +85,7 @@ class SxyPrn : MainAPI() {
                 timeout = 100L
             ).document
             Log.e("sxyprnLog", doc.toString())
-            val results = doc.select("div.main_content div.post_el_small_mob").mapNotNull {
+            val results = doc.select("a.js-pop").mapNotNull {
                 it.toSearchResult()
             }
 
