@@ -156,7 +156,7 @@ class SxyPrn : MainAPI() {
         tmp[1] += "8/${boo(generateNumber(tmp[6]), generateNumber(tmp[7]), host)}"
         updateUrl(tmp)
 
-        url = tmp.joinToString("/")
+        url = mainUrl+tmp.joinToString("/")
 
         callback.invoke(
             newExtractorLink(
