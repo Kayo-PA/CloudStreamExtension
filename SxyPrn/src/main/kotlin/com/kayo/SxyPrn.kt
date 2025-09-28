@@ -12,7 +12,7 @@ import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.cloudstream3.utils.newExtractorLink
 
 class SxyPrn : MainAPI() {
-    override var mainUrl = "https://sxyprn.com"
+    override var mainUrl = "https://www.sxyprn.com"
     override var name = "Sxyprn"
     override val hasMainPage = true
     override val hasDownloadSupport = true
