@@ -1,6 +1,5 @@
 package com.kayo
 
-import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.utils.ExtractorLink
@@ -35,7 +34,7 @@ class Pornhd3x : MainAPI() {
         "$mainUrl/studio/fakehub" to "Fakehub",
         "$mainUrl/studio/naughtyamerica" to "Naughty America"
 
-        )
+    )
 
     override suspend fun getMainPage(
         page: Int,
@@ -86,7 +85,13 @@ class Pornhd3x : MainAPI() {
     override suspend fun search(query: String): List<SearchResponse> {
         val searchResponse = mutableListOf<SearchResponse>()
         for (i in 1..5) {
-            val searchUrl = if (query == "latest") "$mainUrl/premium-porn-hd/page-$i" else if (" " in query) "$mainUrl/search/${query.replace(" ","%20")}" else "$mainUrl/search/${query.replace(" ","%20")}/page-$i"
+            val searchUrl =
+                if (query == "latest") "$mainUrl/premium-porn-hd/page-$i" else if (" " in query) "$mainUrl/search/${
+                    query.replace(
+                        " ",
+                        "%20"
+                    )
+                }" else "$mainUrl/search/${query.replace(" ", "%20")}/page-$i"
             val document = app.get(searchUrl).document
             val results =
                 document.select("div.ml-item a")
@@ -103,7 +108,9 @@ class Pornhd3x : MainAPI() {
         val document = app.get(url).document
         val info = document.selectFirst("div.mvi-content")!!
         val title = info.selectFirst("div.mvic-desc > h3")!!.text()
-        val poster = document.selectFirst("meta[property=\"og:image\"]")?.attr("content")?.replace("http://brazzers3x.com/xxxfree", "https://xxxfree")?.replace("http", "https")?.replace("brazzers3x.com", "pornhd3x.tv")
+        val poster = document.selectFirst("meta[property=\"og:image\"]")?.attr("content")
+            ?.replace("http://brazzers3x.com/xxxfree", "https://xxxfree")?.replace("http", "https")
+            ?.replace("brazzers3x.com", "pornhd3x.tv")
         val tags = document.select("div#mv-keywords a").map { it!!.text() }
         val description = info.selectFirst("div.desc")!!.text()
         val actors =
@@ -141,16 +148,21 @@ class Pornhd3x : MainAPI() {
                 name,
                 name,
                 videoUrl,
-                type=ExtractorLinkType.M3U8
+                type = ExtractorLinkType.M3U8
             ) {
-                val cookie = "826avrbi6m49vd7shxkn985m${ uuid }k06twz87wwxtp3dqiicks2df=$generatedId"
+                val cookie = "826avrbi6m49vd7shxkn985m${uuid}k06twz87wwxtp3dqiicks2df=$generatedId"
                 this.referer = data
                 this.headers = mapOf(
-                    "X-Requested-With" to "XMLHttpRequest",
-                    "Accept" to "application/json",
+                    "Accept" to "*/*",
                     "Cookie" to cookie,
-                    "Referer" to url,
-                    "User-Agent" to USER_AGENT
+                    "User-Agent" to USER_AGENT,
+                    "accept-encoding" to "gzip, deflate, br, zstd",
+                    "accept-language" to "en-US,en;q=0.9",
+                    "cache-control" to "no-cache",
+                    "dnt" to "1",
+                    "origin" to mainUrl,
+                    "pragma" to "no-cache",
+                    "priority" to "u=1, i"
                 )
             }
         )
@@ -164,7 +176,7 @@ class Pornhd3x : MainAPI() {
         val md5Bytes = md.digest(input.toByteArray())
         val md5Hex = md5Bytes.joinToString("") { "%02x".format(it) }
         val rurl = "https://www9.pornhd3x.tv/ajax/get_sources/$uuid/$md5Hex?count=1&mobile=true"
-        val cookie = "826avrbi6m49vd7shxkn985m${ uuid }k06twz87wwxtp3dqiicks2df=$id"
+        val cookie = "826avrbi6m49vd7shxkn985m${uuid}k06twz87wwxtp3dqiicks2df=$id"
         val client = OkHttpClient()
         val request = Request.Builder()
             .url(rurl)
