@@ -81,7 +81,7 @@ class SxyPrn : MainAPI() {
             val headers =
                 mapOf("User-Agent" to "Mozilla/5.0 (Android 13; Mobile; rv:139.0) Gecko/139.0 Firefox/139.0")
             val doc = app.get(
-                url="$mainUrl/${searchParam.replace(" ", "-")}.html?page=${i * 30}",
+                url = "$mainUrl/${searchParam.replace(" ", "-")}.html?page=${i * 30}",
                 headers = headers,
                 interceptor = cfInterceptor
             ).document
@@ -121,19 +121,20 @@ class SxyPrn : MainAPI() {
         }
     }
 
-    private fun updateUrl(arg: MutableList<String>): MutableList<String> {
-        arg[5] =
-            (Integer.parseInt(arg[5]) - (generateNumber(arg[6]) + generateNumber(arg[7]))).toString()
-        return arg
+    private fun updateUrl(arg: MutableList<String>) {
+        arg[5] = (arg[5].toInt() - (generateNumber(arg[6]) + generateNumber(arg[7]))).toString()
     }
 
     private fun generateNumber(arg: String): Int {
-        val str = arg.replace(Regex("\\D"), "")
-        var sut = 0
-        for (element in str) {
-            sut += Integer.parseInt(element.toString(), 10)
-        }
-        return sut
+        val digitsOnly = arg.replace(Regex("\\D"), "")
+        return digitsOnly.sumOf { it.digitToInt() }
+    }
+
+    private fun boo(ss: Int, es: Int, host: String): String {
+        val plain = "$ss-$host-$es"
+        val b64 =
+            android.util.Base64.encodeToString(plain.toByteArray(), android.util.Base64.NO_WRAP)
+        return b64.replace("+", "-").replace("/", "_").replace("=", ".")
     }
 
     override suspend fun loadLinks(
@@ -142,50 +143,31 @@ class SxyPrn : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        val document = app.get(data).document
-        runAllAsync(
-            {
-                document.select("div.post_el_wrap a.extlink").amap {
-                    loadExtractor(it.attr("href"), "", subtitleCallback, callback)
-                }
-            },
-            {
-                val torrentLink = document.select("a.mpc_btn").attr("href")
-                val doc = app.get(torrentLink).document
-                val magnetLink = doc.select("a.md_btn").attr("href")
-                callback.invoke(
-                    newExtractorLink(
-                        "$name[Magnet]",
-                        "$name[Magnet]",
-                        magnetLink,
-                        ExtractorLinkType.MAGNET
-                    )
-                )
-            },
+        val document = app.get(data, interceptor = cfInterceptor).document
+
+        val parsed = AppUtils.parseJson<Map<String, String>>(
+            document.select("span.vidsnfo").attr("data-vnfo")
         )
+        val pid = parsed.keys.first()
+        var url = parsed[pid]!! // non-nullable
+        val host = "sxyprn.com"
 
-         val parsed = AppUtils.parseJson<Map<String, String>>(
-             document.select("span.vidsnfo").attr("data-vnfo")
-         )
-         parsed[parsed.keys.toList()[0]]
-         var url = parsed[parsed.keys.toList()[0]].toString()
+        val tmp = url.split("/").toMutableList()
+        tmp[1] += "8/${boo(generateNumber(tmp[6]), generateNumber(tmp[7]), host)}"
+        updateUrl(tmp)
 
-         var tmp = url.split("/").toMutableList()
-         tmp[1] += "8"
-         tmp = updateUrl(tmp)
+        url = tmp.joinToString("/")
 
-         url = fixUrl(tmp.joinToString("/"))
-
-         callback.invoke(
-             newExtractorLink(
-                 source = this.name,
-                 name = this.name,
-                 url = url
-             ) {
-                 this.referer = ""
-                 this.quality = Qualities.Unknown.value
-             }
-         )
+        callback.invoke(
+            newExtractorLink(
+                source = this.name,
+                name = this.name,
+                url = url
+            ) {
+                this.referer = ""
+                this.quality = Qualities.Unknown.value
+            }
+        )
         return true
     }
 }
