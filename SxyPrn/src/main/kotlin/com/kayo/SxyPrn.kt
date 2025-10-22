@@ -157,12 +157,13 @@ class SxyPrn : MainAPI() {
         updateUrl(tmp)
 
         url = mainUrl+tmp.joinToString("/")
+        val newurl = app.get(url, interceptor = cfInterceptor).url
 
         callback.invoke(
             newExtractorLink(
                 source = this.name,
                 name = this.name,
-                url = url
+                url = newurl
             ) {
                 this.referer = ""
                 this.quality = Qualities.Unknown.value
