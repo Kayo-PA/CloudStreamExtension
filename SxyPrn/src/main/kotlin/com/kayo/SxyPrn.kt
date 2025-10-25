@@ -163,7 +163,8 @@ class SxyPrn : MainAPI() {
             newExtractorLink(
                 source = this.name,
                 name = this.name,
-                url = newurl
+                url = newurl,
+                type = ExtractorLinkType.VIDEO
             ) {
                 this.referer = ""
                 this.quality = Qualities.Unknown.value
