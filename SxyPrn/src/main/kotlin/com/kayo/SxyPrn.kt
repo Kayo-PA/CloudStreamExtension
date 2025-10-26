@@ -106,17 +106,17 @@ class SxyPrn : MainAPI() {
         var production = ""
         var starring = ""
         var title1 = ""
-        if (document.selectFirst("div.post_text h1 b.sub_cat_s").toString() != "") {
-            production = "[" + document.selectFirst("div.post_text h1 b.sub_cat_s")!!.text() + "]-"
+        if (document.selectFirst("div.post_text h1 b.sub_cat_s")?.toString() != "") {
+            production = "[" + document.selectFirst("div.post_text h1 b.sub_cat_s")?.text() + "]-"
         }
         if (document.select("div.post_text h1 a.ps_link.tdn.transition").toString() != "") {
             starring =
                 document.select("div.post_text a.ps_link.tdn.transition")
                     .joinToString { it.text() } + "-"
         }
-        if (document.selectFirst("div.post_text h1")!!.ownText() != "") {
-            title1 = document.selectFirst("div.post_text h1")!!.ownText().replace("+", "")
-                .replace(",", "").trim()
+        if (document.selectFirst("div.post_text h1")?.ownText() != "") {
+            title1 = document.selectFirst("div.post_text h1")?.ownText()?.replace("+", "")
+                ?.replace(",", "")?.trim() ?: ""
         }
         Log.e("SxyPrn", "Title: $production$starring$title1")
 
