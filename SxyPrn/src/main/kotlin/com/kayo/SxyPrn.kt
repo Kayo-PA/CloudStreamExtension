@@ -1,6 +1,5 @@
 package com.kayo
 
-import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.network.CloudflareKiller
 import com.lagradost.cloudstream3.utils.AppUtils
@@ -8,7 +7,6 @@ import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
 import org.jsoup.nodes.Element
-import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.cloudstream3.utils.newExtractorLink
 
 class SxyPrn : MainAPI() {
@@ -85,7 +83,6 @@ class SxyPrn : MainAPI() {
                 headers = headers,
                 interceptor = cfInterceptor
             ).document
-            Log.e("sxyprnLog", doc.toString())
             val results = doc.select("a.js-pop").mapNotNull {
                 it.toSearchResult()
             }
@@ -105,7 +102,22 @@ class SxyPrn : MainAPI() {
 
     override suspend fun load(url: String): LoadResponse {
         val document = app.get(url, interceptor = cfInterceptor, timeout = 100L).document
-        val title = document.selectFirst("div.post_text")?.text()?.trim().toString()
+        var production = ""
+        var starring = ""
+        var title1 = ""
+        if (document.selectFirst("div.post_text h1 b.sub_cat_s").toString() != "") {
+            production = "[" + document.selectFirst("div.post_text h1 b.sub_cat_s")!!.text() + "]-"
+        }
+        if (document.select("div.post_text h1 a.ps_link.tdn.transition").toString() != "") {
+            starring =
+                document.select("div.post_text a.ps_link.tdn.transition")
+                    .joinToString { it.text() } + "-"
+        }
+        if (document.selectFirst("div.post_text h1")!!.ownText() != "") {
+            title1 = document.selectFirst("div.post_text h1")!!.ownText().replace("+", "")
+                .replace(",", "").trim()
+        }
+        val title = production + starring + title1
         val poster = fixUrlNull(
             document.selectFirst("meta[property=og:image]")
                 ?.attr("content")
@@ -114,9 +126,11 @@ class SxyPrn : MainAPI() {
         val recommendations = document.select("div.main_content div div.post_el_small").mapNotNull {
             it.toSearchResult()
         }
+        val description = document.select("div.post_text h1").text()
 
         return newMovieLoadResponse(title, url, TvType.NSFW, url) {
             this.posterUrl = poster
+            this.plot = description
             this.recommendations = recommendations
         }
     }
@@ -156,7 +170,7 @@ class SxyPrn : MainAPI() {
         tmp[1] += "8/${boo(generateNumber(tmp[6]), generateNumber(tmp[7]), host)}"
         updateUrl(tmp)
 
-        url = mainUrl+tmp.joinToString("/")
+        url = mainUrl + tmp.joinToString("/")
         val newurl = app.get(url, interceptor = cfInterceptor).url
 
         callback.invoke(

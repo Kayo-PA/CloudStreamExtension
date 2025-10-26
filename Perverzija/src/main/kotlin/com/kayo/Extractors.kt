@@ -37,7 +37,7 @@ open class Xtremestream : ExtractorApi() {
 
             if (videoId.isNotBlank() && m3u8LoaderUrl.isNotBlank()) {
 
-                val resolutions = listOf(1080, 720, 480)
+                val resolutions = listOf(2160,1080, 720, 480)
 
                 resolutions.forEach { resolution ->
                     callback.invoke(
