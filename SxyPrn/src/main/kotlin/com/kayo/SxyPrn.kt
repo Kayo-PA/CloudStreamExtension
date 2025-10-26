@@ -116,7 +116,7 @@ class SxyPrn : MainAPI() {
                     .joinToString { it.text().replace(Regex("[^A-Za-z0-9 ]"), "") } + " - "
         }
         if (document.selectFirst("div.post_text h1")?.ownText() != "") {
-            title1 = document.selectFirst("div.post_text h1")?.ownText()
+            title1 = document.selectFirst("div.post_text h1")?.ownText()?.substringBefore(".")
                 ?.replace(Regex("[^A-Za-z0-9 ]"), "")?.trim() ?: ""
         }
         Log.e("SxyPrn", "Title: $production$starring$title1")
