@@ -1,5 +1,6 @@
 package com.kayo
 
+import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.network.CloudflareKiller
 import com.lagradost.cloudstream3.utils.AppUtils
@@ -117,6 +118,8 @@ class SxyPrn : MainAPI() {
             title1 = document.selectFirst("div.post_text h1")!!.ownText().replace("+", "")
                 .replace(",", "").trim()
         }
+        Log.e("SxyPrn", "Title: $production$starring$title1")
+
         val title = production + starring + title1
         val poster = fixUrlNull(
             document.selectFirst("meta[property=og:image]")
