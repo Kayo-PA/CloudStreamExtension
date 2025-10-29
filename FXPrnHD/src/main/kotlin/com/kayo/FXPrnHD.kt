@@ -17,6 +17,7 @@ class Fxprnhd : MainAPI() {
     override val hasDownloadSupport = true
     override val vpnStatus = VPNStatus.MightBeNeeded
     override val supportedTypes = setOf(TvType.NSFW)
+    private val actorImgUrl = "https://cdni.pornpics.de/models/"
 
     override val mainPage = mainPageOf(
         "latest" to "Latest Video",
@@ -56,8 +57,8 @@ class Fxprnhd : MainAPI() {
 
     private fun Element.toSearchResult(): SearchResponse? {
         val title = this.selectFirst("span.title")?.text() ?: return null
-        val trailer = "https:"+this.selectFirst("video.wpst-trailer source")?.attr("src")
-        val href = fixUrl(this.selectFirst("a")!!.attr("href")) + ","+ trailer
+        val trailer = "https:" + this.selectFirst("video.wpst-trailer source")?.attr("src")
+        val href = fixUrl(this.selectFirst("a")!!.attr("href")) + "," + trailer
         var posterUrl = this.select("div.post-thumbnail").attr("data-thumbs")
         if (posterUrl.isEmpty()) {
             posterUrl = this.select("video.wpst-trailer").attr("poster")
@@ -100,8 +101,18 @@ class Fxprnhd : MainAPI() {
             fixUrlNull(document.selectFirst("meta[property=og:image]")?.attr("content").toString())
         val tags = document.select("div.tags-list > i").map { it.text() }
         val description = document.select("div#rmjs-1 p:nth-child(1) > br").text().trim()
-        val actors =
-            document.select("div#rmjs-1 p:nth-child(1) a:nth-child(2) > strong").map { it.text() }
+        val actorNames = document.select("div.tags-list a[href*=/actor/]")
+            .mapNotNull { it.attr("title").takeIf { name -> name.isNotBlank() } }
+        val actors = actorNames.map { name ->
+            ActorData(
+                Actor(
+                    name,
+                    "$actorImgUrl${name[0].lowercase()}/${name.replace(" ", "_").lowercase()}.jpg"
+                )
+            )
+        }
+
+
         val duration = Duration.parse(
             document.select("div.video-player meta[itemprop=duration]").attr("content")
         )
@@ -114,13 +125,16 @@ class Fxprnhd : MainAPI() {
             this.posterUrl = poster
             this.plot = description
             this.tags = tags
-            addActors(actors)
+//            addActors(actors)
+            this.actors = actors
             this.recommendations = recommendations
             this.duration = duration.toInt(DurationUnit.MINUTES)
             this.year = 2025
-            if (trailerUrl !="https:"){
-            this.trailers = listOf(TrailerData(trailerUrl, "", true)) as MutableList<TrailerData>
-        }}
+            if (trailerUrl != "https:") {
+                this.trailers =
+                    listOf(TrailerData(trailerUrl, "", true)) as MutableList<TrailerData>
+            }
+        }
 
     }
 
