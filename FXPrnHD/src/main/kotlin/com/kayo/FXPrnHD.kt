@@ -2,6 +2,7 @@ package com.kayo
 
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
+import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.cloudstream3.utils.*
@@ -114,13 +115,7 @@ class Fxprnhd : MainAPI() {
             this.recommendations = recommendations
             this.duration = duration.toInt(DurationUnit.MINUTES)
             this.year = 2025
-            this.trailers = listOf(
-                TrailerData(
-                    "https://prog-public-ht.project1content.com/b4f/ba9/b7a/cb6/4cf/99b/b3a/aa0/d32/076/00/mediabook/mediabook_320p.mp4",
-                    referer = "$mainUrl/",
-                    raw = true,
-                )
-            ) as MutableList<TrailerData>
+            addTrailer("https://prog-public-ht.project1content.com/b4f/ba9/b7a/cb6/4cf/99b/b3a/aa0/d32/076/00/mediabook/mediabook_320p.mp4")
         }
     }
 
