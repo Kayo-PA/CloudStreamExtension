@@ -1,12 +1,10 @@
 package com.kayo
 
-import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.cloudstream3.utils.*
-import kotlinx.coroutines.delay
 import org.jsoup.nodes.Element
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
@@ -75,8 +73,11 @@ class Fxprnhd : MainAPI() {
         val results = document.select("div.videos-list > article")
             .mapNotNull { it.toSearchResult() }
 
-        val lastPageUrl = document.select("div.pagination ul li").last()?.selectFirst("a")?.attr("href")
-        val totalPages = Regex("""page/(\d+)/""").find(lastPageUrl ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 1
+        val lastPageUrl =
+            document.select("div.pagination ul li").last()?.selectFirst("a")?.attr("href")
+        val totalPages =
+            Regex("""page/(\d+)/""").find(lastPageUrl ?: "")?.groupValues?.get(1)?.toIntOrNull()
+                ?: 1
 
         val hasNext = page < totalPages
 
@@ -85,7 +86,6 @@ class Fxprnhd : MainAPI() {
             hasNext = hasNext
         )
     }
-
 
 
     override suspend fun load(url: String): LoadResponse {
@@ -98,7 +98,9 @@ class Fxprnhd : MainAPI() {
         val description = document.select("div#rmjs-1 p:nth-child(1) > br").text().trim()
         val actors =
             document.select("div#rmjs-1 p:nth-child(1) a:nth-child(2) > strong").map { it.text() }
-        val duration = Duration.parse(document.select("div.video-player meta[itemprop=duration]").attr("content"))
+        val duration = Duration.parse(
+            document.select("div.video-player meta[itemprop=duration]").attr("content")
+        )
         val recommendations =
             document.select("div.videos-list > article").mapNotNull {
                 it.toSearchResult()
@@ -111,6 +113,13 @@ class Fxprnhd : MainAPI() {
             addActors(actors)
             this.recommendations = recommendations
             this.duration = duration.toInt(DurationUnit.MINUTES)
+            this.trailers = listOf<TrailerData>(
+                TrailerData(
+                    "https://prog-public-ht.project1content.com/b4f/ba9/b7a/cb6/4cf/99b/b3a/aa0/d32/076/00/mediabook/mediabook_320p.mp4",
+                    referer = "$mainUrl/",
+                    raw = true,
+                )
+            ) as MutableList<TrailerData>
         }
     }
 
