@@ -74,9 +74,11 @@ class Fxprnhd : MainAPI() {
                     .mapNotNull {
                         it.toSearchResult()
                     }
+            val aa = document.select("div.pagination ul li").last()?.attr("href")
             searchResponse.addAll(results)
             if (results.isEmpty()) break
         }
+
         return searchResponse
     }
 

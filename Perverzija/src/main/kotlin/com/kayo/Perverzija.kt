@@ -83,24 +83,41 @@ class Perverzija : MainAPI() {
 
     override suspend fun search(query: String): List<SearchResponse> {
         val searchResponse = mutableListOf<SearchResponse>()
-        val maxPages = if (query.contains(" ")) 6 else 20
-        for (i in 1..maxPages) {
-            val url = if (query.contains(" ")) {
-                "$mainUrl/page/$i/?s=${query.replace(" ", "+")}&orderby=date"
-            } else if(query == "latest"){
-                "$mainUrl/page/$i/?orderby=date"
-            }else{"$mainUrl/tag/$query/page/$i/"}
+        var page = 1
 
-            val results = app.get(url, interceptor = cfInterceptor).document
-                .select("div.row div div.post").mapNotNull {
-                    it.toSearchResult()
-                }.distinctBy { it.url }
+        while (true) {
+            // Build URL dynamically based on query type
+            val url = when {
+                query.contains(" ") -> "$mainUrl/page/$page/?s=${query.replace(" ", "+")}&orderby=date"
+                query == "latest" -> "$mainUrl/page/$page/?orderby=date"
+                else -> "$mainUrl/tag/$query/page/$page/"
+            }
+
+            val doc = app.get(url, interceptor = cfInterceptor).document
+            val results = doc.select("div.row div div.post").mapNotNull {
+                it.toSearchResult()
+            }.distinctBy { it.url }
+
+            // 🧠 Stop if no results found
             if (results.isEmpty()) break
-            else delay((100L..500L).random())
+
+            // Add results
             searchResponse.addAll(results)
+
+            // 🧠 Check for “Next Page” link (pagination)
+            val hasNext = doc.select("div.wp-pagenavi a.nextpostslink").isNotEmpty()
+            if (!hasNext) break  // stop loop if no next button
+
+            // Delay to avoid spamming requests
+            delay((100L..500L).random())
+
+            // Move to next page
+            page++
         }
+
         return searchResponse.distinctBy { it.url }
     }
+
 
     override suspend fun load(url: String): LoadResponse {
         val document = app.get(url, interceptor = cfInterceptor).document

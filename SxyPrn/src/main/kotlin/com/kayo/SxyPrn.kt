@@ -1,14 +1,29 @@
 package com.kayo
 
 import android.util.Log
-import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.HomePageList
+import com.lagradost.cloudstream3.HomePageResponse
+import com.lagradost.cloudstream3.MainAPI
+import com.lagradost.cloudstream3.MainPageRequest
+import com.lagradost.cloudstream3.TvType
+import com.lagradost.cloudstream3.VPNStatus
+import com.lagradost.cloudstream3.mainPageOf
 import com.lagradost.cloudstream3.network.CloudflareKiller
+import com.lagradost.cloudstream3.newHomePageResponse
 import com.lagradost.cloudstream3.utils.AppUtils
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
 import org.jsoup.nodes.Element
 import com.lagradost.cloudstream3.utils.newExtractorLink
+import com.lagradost.cloudstream3.LoadResponse
+import com.lagradost.cloudstream3.SearchResponse
+import com.lagradost.cloudstream3.SubtitleFile
+import com.lagradost.cloudstream3.app
+import com.lagradost.cloudstream3.fixUrl
+import com.lagradost.cloudstream3.fixUrlNull
+import com.lagradost.cloudstream3.newMovieLoadResponse
+import com.lagradost.cloudstream3.newMovieSearchResponse
 
 class SxyPrn : MainAPI() {
     override var mainUrl = "https://www.sxyprn.com"
@@ -72,21 +87,31 @@ class SxyPrn : MainAPI() {
         }
     }
 
-    override suspend fun search(query: String): List<SearchResponse> {
-
+    override suspend fun search(query: String): List<SearchResponse>? {
         val searchResponse = mutableListOf<SearchResponse>()
-        for (i in 0 until 15) {
-            val searchParam = if (query == "latest") "NEW" else query
-            val headers =
-                mapOf("User-Agent" to "Mozilla/5.0 (Android 13; Mobile; rv:139.0) Gecko/139.0 Firefox/139.0")
-            val doc = app.get(
-                url = "$mainUrl/${searchParam.replace(" ", "-")}.html?page=${i * 30}",
-                headers = headers,
-                interceptor = cfInterceptor
-            ).document
-            val results = doc.select("a.js-pop").mapNotNull {
-                it.toSearchResult()
+        val searchParam = if (query == "latest") "NEW" else query
+        val headers = mapOf("User-Agent" to "Mozilla/5.0 (Android 13; Mobile; rv:139.0) Gecko/139.0 Firefox/139.0")
+
+        // First page to get total page count
+        val firstDoc = app.get(
+            url = "$mainUrl/${searchParam.replace(" ", "-")}.html",
+            headers = headers,
+            interceptor = cfInterceptor
+        ).document
+
+        // Get number of pages (fallback to 1 if not found)
+        val totalPages = firstDoc.select("div#center_control a").size.takeIf { it > 0 } ?: 1
+
+        for (i in 1..totalPages) {
+            val doc = if (i == 1) firstDoc else {
+                app.get(
+                    url = "$mainUrl/${searchParam.replace(" ", "-")}.html?page=${i * 30}",
+                    headers = headers,
+                    interceptor = cfInterceptor
+                ).document
             }
+
+            val results = doc.select("a.js-pop").mapNotNull { it.toSearchResult() }
 
             if (!searchResponse.containsAll(results)) {
                 searchResponse.addAll(results)
@@ -99,6 +124,7 @@ class SxyPrn : MainAPI() {
 
         return searchResponse
     }
+
 
 
     override suspend fun load(url: String): LoadResponse {
