@@ -132,7 +132,7 @@ class Fxprnhd : MainAPI() {
             this.recommendations = recommendations
             this.duration = duration.toInt(DurationUnit.MINUTES)
             this.year = 2025
-            if (trailerUrl != "https:") {
+            if (trailerUrl != "https:null") {
                 this.trailers =
                     listOf(TrailerData(trailerUrl, "", true)) as MutableList<TrailerData>
             }
