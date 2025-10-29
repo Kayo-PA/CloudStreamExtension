@@ -56,7 +56,8 @@ class Fxprnhd : MainAPI() {
 
     private fun Element.toSearchResult(): SearchResponse? {
         val title = this.selectFirst("span.title")?.text() ?: return null
-        val href = fixUrl(this.selectFirst("a")!!.attr("href"))
+        val trailer = this.selectFirst("video.wpst-trailer source")?.attr("src")
+        val href = fixUrl(this.selectFirst("a")!!.attr("href")) + ","+ trailer
         var posterUrl = this.select("div.post-thumbnail").attr("data-thumbs")
         if (posterUrl.isEmpty()) {
             posterUrl = this.select("video.wpst-trailer").attr("poster")
@@ -90,7 +91,9 @@ class Fxprnhd : MainAPI() {
 
 
     override suspend fun load(url: String): LoadResponse {
-        val document = app.get(url).document
+        val newurl = url.substringBeforeLast(",")
+        val trailerUrl = url.substringAfterLast(",")
+        val document = app.get(newurl).document
 
         val title = document.selectFirst("div.title-views > h1")?.text()?.trim().toString()
         val poster =
@@ -115,7 +118,7 @@ class Fxprnhd : MainAPI() {
             this.recommendations = recommendations
             this.duration = duration.toInt(DurationUnit.MINUTES)
             this.year = 2025
-            addTrailer("https://prog-public-ht.project1content.com/b4f/ba9/b7a/cb6/4cf/99b/b3a/aa0/d32/076/00/mediabook/mediabook_320p.mp4")
+            addTrailer(trailerUrl)
         }
     }
 
@@ -135,7 +138,7 @@ class Fxprnhd : MainAPI() {
                     this.name,
                     this.name,
                     video,
-                    INFER_TYPE
+                    ExtractorLinkType.VIDEO
                 ) {
                     this.referer = "$mainUrl/"
                 }
