@@ -56,43 +56,34 @@ class Fxprnhd : MainAPI() {
     private fun Element.toSearchResult(): SearchResponse? {
         val title = this.selectFirst("span.title")?.text() ?: return null
         val href = fixUrl(this.selectFirst("a")!!.attr("href"))
-        var posterUrl = this.select("div.post-thumbnail img").attr("data-src")
+        var posterUrl = this.select("div.post-thumbnail").attr("data-thumbs")
         if (posterUrl.isEmpty()) {
             posterUrl = this.select("video.wpst-trailer").attr("poster")
         }
-        Log.d("Fxprnhd", "toSearchResult: PosterUrl: $posterUrl")
         return newMovieSearchResponse(title, href, TvType.Movie) {
             this.posterUrl = posterUrl
             this.quality = SearchQuality.HD
-            this.year = 2025
         }
 
     }
 
-    override suspend fun search(query: String): List<SearchResponse> {
-        val searchResponse = mutableListOf<SearchResponse>()
+    override suspend fun search(query: String, page: Int): SearchResponseList? {
         val searchParam = if (query == "latest") "" else query
+        val document = app.get("$mainUrl/page/$page/?s=$searchParam").document
+        val results = document.select("div.videos-list > article")
+            .mapNotNull { it.toSearchResult() }
 
-        val firstDoc = app.get("$mainUrl/page/1/?s=$searchParam").document
-
-        val lastPageUrl = firstDoc.select("div.pagination ul li").last()?.attr("href")
-        Log.d("Fxprnhd", "search: Last Page URL: $lastPageUrl")
+        val lastPageUrl = document.select("div.pagination ul li").last()?.selectFirst("a")?.attr("href")
         val totalPages = Regex("""page/(\d+)/""").find(lastPageUrl ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 1
-        Log.d("Fxprnhd", "search: Total Pages: $totalPages")
 
-        for (i in 1..totalPages) {
-            val document = app.get("$mainUrl/page/$i/?s=$searchParam").document
+        val hasNext = page < totalPages
 
-            val results = document.select("div.videos-list > article")
-                .mapNotNull { it.toSearchResult() }
-
-            if (results.isEmpty()) break
-
-            searchResponse.addAll(results)
-        }
-
-        return searchResponse.distinctBy { it.url }
+        return newSearchResponseList(
+            list = results,
+            hasNext = hasNext
+        )
     }
+
 
 
     override suspend fun load(url: String): LoadResponse {
