@@ -95,7 +95,6 @@ class Fxprnhd : MainAPI() {
     override suspend fun load(url: String): LoadResponse {
         val newurl = url.substringBeforeLast(",")
         val trailerUrl = url.substringAfterLast(",")
-        Log.d("Fxprnhd", "Trailer URL: $trailerUrl")
         val document = app.get(newurl).document
 
         val title = document.selectFirst("div.title-views > h1")?.text()?.trim().toString()
@@ -123,11 +122,10 @@ class Fxprnhd : MainAPI() {
                 it.toSearchResult()
             }
 
-        return newMovieLoadResponse(title, url, TvType.NSFW, url) {
+        return newMovieLoadResponse(title, newurl, TvType.NSFW, url) {
             this.posterUrl = poster
             this.plot = description
             this.tags = tags
-//            addActors(actors)
             this.actors = actors
             this.recommendations = recommendations
             this.duration = duration.toInt(DurationUnit.MINUTES)
