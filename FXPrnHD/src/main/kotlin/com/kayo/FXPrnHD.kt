@@ -17,7 +17,7 @@ class Fxprnhd : MainAPI() {
     override val hasDownloadSupport = true
     override val vpnStatus = VPNStatus.MightBeNeeded
     override val supportedTypes = setOf(TvType.NSFW)
-    private val actorImgUrl = "https://cdni.pornpics.de/models/"
+    private val actorImgUrl = "https://cdn.dt18.com/images/names/big/"
 
     override val mainPage = mainPageOf(
         "latest" to "Latest Video",
@@ -107,7 +107,7 @@ class Fxprnhd : MainAPI() {
             ActorData(
                 Actor(
                     name,
-                    "$actorImgUrl${name[0].lowercase()}/${name.replace(" ", "_").lowercase()}.jpg"
+                    "$actorImgUrl${name.replace(" ", "-").lowercase()}.jpg"
                 )
             )
         }
