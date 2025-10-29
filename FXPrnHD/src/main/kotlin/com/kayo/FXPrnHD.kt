@@ -76,6 +76,7 @@ class Fxprnhd : MainAPI() {
 
         val lastPageUrl = firstDoc.select("div.pagination ul li").last()?.attr("href")
         val totalPages = Regex("""page/(\d+)/""").find(lastPageUrl ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 1
+        Log.d("Fxprnhd", "search: Total Pages: $totalPages")
 
         for (i in 1..totalPages) {
             val document = app.get("$mainUrl/page/$i/?s=$searchParam").document
@@ -86,9 +87,6 @@ class Fxprnhd : MainAPI() {
             if (results.isEmpty()) break
 
             searchResponse.addAll(results)
-
-            // Optional delay to avoid overloading server
-            delay((100L..500L).random())
         }
 
         return searchResponse.distinctBy { it.url }
