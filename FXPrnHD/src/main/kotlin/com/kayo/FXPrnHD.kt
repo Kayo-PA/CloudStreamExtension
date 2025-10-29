@@ -113,7 +113,8 @@ class Fxprnhd : MainAPI() {
             addActors(actors)
             this.recommendations = recommendations
             this.duration = duration.toInt(DurationUnit.MINUTES)
-            this.trailers = listOf<TrailerData>(
+            this.year = 2025
+            this.trailers = listOf(
                 TrailerData(
                     "https://prog-public-ht.project1content.com/b4f/ba9/b7a/cb6/4cf/99b/b3a/aa0/d32/076/00/mediabook/mediabook_320p.mp4",
                     referer = "$mainUrl/",
