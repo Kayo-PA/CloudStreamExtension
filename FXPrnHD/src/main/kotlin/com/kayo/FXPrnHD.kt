@@ -1,5 +1,6 @@
 package com.kayo
 
+import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
@@ -94,6 +95,7 @@ class Fxprnhd : MainAPI() {
     override suspend fun load(url: String): LoadResponse {
         val newurl = url.substringBeforeLast(",")
         val trailerUrl = url.substringAfterLast(",")
+        Log.d("Fxprnhd", "Trailer URL: $trailerUrl")
         val document = app.get(newurl).document
 
         val title = document.selectFirst("div.title-views > h1")?.text()?.trim().toString()
