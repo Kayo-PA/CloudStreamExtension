@@ -8,6 +8,8 @@ import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.cloudstream3.utils.*
 import kotlinx.coroutines.delay
 import org.jsoup.nodes.Element
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
 
 class Fxprnhd : MainAPI() {
     override var mainUrl = "https://fxpornhd.com"
@@ -96,7 +98,7 @@ class Fxprnhd : MainAPI() {
         val description = document.select("div#rmjs-1 p:nth-child(1) > br").text().trim()
         val actors =
             document.select("div#rmjs-1 p:nth-child(1) a:nth-child(2) > strong").map { it.text() }
-
+        val duration = Duration.parse(document.select("div.video-player meta[itemprop=duration]").attr("content"))
         val recommendations =
             document.select("div.videos-list > article").mapNotNull {
                 it.toSearchResult()
@@ -108,6 +110,7 @@ class Fxprnhd : MainAPI() {
             this.tags = tags
             addActors(actors)
             this.recommendations = recommendations
+            this.duration = duration.toInt(DurationUnit.MINUTES)
         }
     }
 
