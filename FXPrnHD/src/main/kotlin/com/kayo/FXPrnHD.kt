@@ -93,8 +93,15 @@ class Fxprnhd : MainAPI() {
 
 
     override suspend fun load(url: String): LoadResponse {
-        val newurl = url.substringBeforeLast(",")
-        val trailerUrl = url.substringAfterLast(",")
+        var newurl:String
+        var trailerUrl:String
+        if(url.contains(",")){
+            newurl = url.substringBeforeLast(",")
+            trailerUrl = url.substringAfterLast(",")
+        }else{
+            newurl = url
+            trailerUrl = "https:null"
+        }
         val document = app.get(newurl).document
 
         val title = document.selectFirst("div.title-views > h1")?.text()?.trim().toString()
