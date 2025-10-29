@@ -56,7 +56,7 @@ class Fxprnhd : MainAPI() {
     private fun Element.toSearchResult(): SearchResponse? {
         val title = this.selectFirst("span.title")?.text() ?: return null
         val href = fixUrl(this.selectFirst("a")!!.attr("href"))
-        var posterUrl = this.select("div.post-thumbnail img").attr("src")
+        var posterUrl = this.select("div.post-thumbnail img").attr("data-src")
         if (posterUrl.isEmpty()) {
             posterUrl = this.select("video.wpst-trailer").attr("poster")
         }
@@ -64,6 +64,7 @@ class Fxprnhd : MainAPI() {
         return newMovieSearchResponse(title, href, TvType.Movie) {
             this.posterUrl = posterUrl
             this.quality = SearchQuality.HD
+            this.year = 2025
         }
 
     }
@@ -75,6 +76,7 @@ class Fxprnhd : MainAPI() {
         val firstDoc = app.get("$mainUrl/page/1/?s=$searchParam").document
 
         val lastPageUrl = firstDoc.select("div.pagination ul li").last()?.attr("href")
+        Log.d("Fxprnhd", "search: Last Page URL: $lastPageUrl")
         val totalPages = Regex("""page/(\d+)/""").find(lastPageUrl ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 1
         Log.d("Fxprnhd", "search: Total Pages: $totalPages")
 
