@@ -122,7 +122,7 @@ class Fxprnhd : MainAPI() {
                 it.toSearchResult()
             }
 
-        return newMovieLoadResponse(title, newurl, TvType.NSFW, url) {
+        return newMovieLoadResponse(title, newurl, TvType.NSFW, newurl) {
             this.posterUrl = poster
             this.plot = description
             this.tags = tags
