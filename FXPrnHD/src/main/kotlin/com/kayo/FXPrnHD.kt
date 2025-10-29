@@ -1,10 +1,12 @@
 package com.kayo
 
+import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.cloudstream3.utils.*
+import kotlinx.coroutines.delay
 import org.jsoup.nodes.Element
 
 class Fxprnhd : MainAPI() {
@@ -58,29 +60,40 @@ class Fxprnhd : MainAPI() {
         if (posterUrl.isEmpty()) {
             posterUrl = this.select("video.wpst-trailer").attr("poster")
         }
+        Log.d("Fxprnhd", "toSearchResult: PosterUrl: $posterUrl")
         return newMovieSearchResponse(title, href, TvType.Movie) {
             this.posterUrl = posterUrl
+            this.quality = SearchQuality.HD
         }
 
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
         val searchResponse = mutableListOf<SearchResponse>()
-        for (i in 1..5) {
-            val searchParam = if (query == "latest") "" else query
+        val searchParam = if (query == "latest") "" else query
+
+        val firstDoc = app.get("$mainUrl/page/1/?s=$searchParam").document
+
+        val lastPageUrl = firstDoc.select("div.pagination ul li").last()?.attr("href")
+        val totalPages = Regex("""page/(\d+)/""").find(lastPageUrl ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 1
+
+        for (i in 1..totalPages) {
             val document = app.get("$mainUrl/page/$i/?s=$searchParam").document
-            val results =
-                document.select("div.videos-list > article")
-                    .mapNotNull {
-                        it.toSearchResult()
-                    }
-            val aa = document.select("div.pagination ul li").last()?.attr("href")
-            searchResponse.addAll(results)
+
+            val results = document.select("div.videos-list > article")
+                .mapNotNull { it.toSearchResult() }
+
             if (results.isEmpty()) break
+
+            searchResponse.addAll(results)
+
+            // Optional delay to avoid overloading server
+            delay((100L..500L).random())
         }
 
-        return searchResponse
+        return searchResponse.distinctBy { it.url }
     }
+
 
     override suspend fun load(url: String): LoadResponse {
         val document = app.get(url).document
