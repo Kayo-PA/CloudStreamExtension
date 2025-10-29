@@ -118,8 +118,9 @@ class Fxprnhd : MainAPI() {
             this.recommendations = recommendations
             this.duration = duration.toInt(DurationUnit.MINUTES)
             this.year = 2025
-            addTrailer(trailerUrl)
+            this.trailers = listOf(TrailerData(trailerUrl, "", true)) as MutableList<TrailerData>
         }
+
     }
 
     override suspend fun loadLinks(
