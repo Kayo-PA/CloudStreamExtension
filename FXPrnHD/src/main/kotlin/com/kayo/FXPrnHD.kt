@@ -56,7 +56,7 @@ class Fxprnhd : MainAPI() {
     private fun Element.toSearchResult(): SearchResponse? {
         val title = this.selectFirst("span.title")?.text() ?: return null
         val href = fixUrl(this.selectFirst("a")!!.attr("href"))
-        var posterUrl = this.select("img").attr("src")
+        var posterUrl = this.select("div.post-thumbnail img").attr("src")
         if (posterUrl.isEmpty()) {
             posterUrl = this.select("video.wpst-trailer").attr("poster")
         }
