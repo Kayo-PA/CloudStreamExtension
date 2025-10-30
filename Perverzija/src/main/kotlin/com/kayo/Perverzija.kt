@@ -6,6 +6,7 @@ import com.lagradost.cloudstream3.LoadResponse
 import com.lagradost.cloudstream3.MainAPI
 import com.lagradost.cloudstream3.MainPageRequest
 import com.lagradost.cloudstream3.SearchResponse
+import com.lagradost.cloudstream3.SearchResponseList
 import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.TvType
 import com.lagradost.cloudstream3.app
@@ -15,7 +16,9 @@ import com.lagradost.cloudstream3.network.CloudflareKiller
 import com.lagradost.cloudstream3.newHomePageResponse
 import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
+import com.lagradost.cloudstream3.newSearchResponseList
 import com.lagradost.cloudstream3.utils.ExtractorLink
+import khttp.head
 import kotlinx.coroutines.delay
 import org.jsoup.nodes.Element
 
@@ -26,8 +29,11 @@ class Perverzija : MainAPI() {
 
     override val hasDownloadSupport = true
     override val hasMainPage = true
+    private  val headers = mapOf(
+        "User-Agent" to "Mozilla/5.0 (Android 13; Mobile; rv:139.0) Gecko/139.0 Firefox/139.0"
+    )
 
-    private val cfInterceptor = CloudflareKiller()
+//    private val cfInterceptor = CloudflareKiller()
 
     override val mainPage = mainPageOf(
         "$mainUrl/page/%d/" to "Home",
@@ -47,7 +53,7 @@ class Perverzija : MainAPI() {
         page: Int,
         request: MainPageRequest
     ): HomePageResponse {
-        val document = app.get(request.data.format(page), interceptor = cfInterceptor, timeout = 100L).document
+        val document = app.get(request.data.format(page), headers =headers ).document
         val home = document.select("div.row div div.post").mapNotNull {
             it.toSearchResult()
         }
@@ -81,46 +87,23 @@ class Perverzija : MainAPI() {
 
     }
 
-    override suspend fun search(query: String): List<SearchResponse> {
-        val searchResponse = mutableListOf<SearchResponse>()
-        var page = 1
-
-        while (true) {
-            // Build URL dynamically based on query type
-            val url = when {
-                query.contains(" ") -> "$mainUrl/page/$page/?s=${query.replace(" ", "+")}&orderby=date"
-                query == "latest" -> "$mainUrl/page/$page/?orderby=date"
-                else -> "$mainUrl/tag/$query/page/$page/"
-            }
-
-            val doc = app.get(url, interceptor = cfInterceptor).document
-            val results = doc.select("div.row div div.post").mapNotNull {
-                it.toSearchResult()
-            }.distinctBy { it.url }
-
-            // 🧠 Stop if no results found
-            if (results.isEmpty()) break
-
-            // Add results
-            searchResponse.addAll(results)
-
-            // 🧠 Check for “Next Page” link (pagination)
-            val hasNext = doc.select("div.wp-pagenavi a.nextpostslink").isNotEmpty()
-            if (!hasNext) break  // stop loop if no next button
-
-            // Delay to avoid spamming requests
-            delay((100L..500L).random())
-
-            // Move to next page
-            page++
+    override suspend fun search(query: String, page: Int): SearchResponseList? {
+        val url = when {
+            query.contains(" ") -> "$mainUrl/page/$page/?s=${query.replace(" ", "+")}&orderby=date"
+            query == "latest" -> "$mainUrl/page/$page/?orderby=date"
+            else -> "$mainUrl/tag/$query/page/$page/"
         }
+        val doc = app.get(url, headers = headers).document
+        val results = doc.select("div.row div div.post").mapNotNull { it.toSearchResult() }
 
-        return searchResponse.distinctBy { it.url }
+        val hasNextPage = doc.select("div.wp-pagenavi a.nextpostslink").isNotEmpty()
+
+        return newSearchResponseList(results, hasNextPage)
     }
 
 
     override suspend fun load(url: String): LoadResponse {
-        val document = app.get(url, interceptor = cfInterceptor).document
+        val document = app.get(url, headers = headers).document
 
         val poster = document.select("div#featured-img-id img").attr("src")
         val title = document.select("div.title-info h1.light-title.entry-title").text()
@@ -152,7 +135,7 @@ class Perverzija : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        val response = app.get(data, interceptor = cfInterceptor)
+        val response = app.get(data, headers = headers)
         val document = response.document
 
         val iframeUrl = document.select("div#player-embed iframe").attr("src")
