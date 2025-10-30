@@ -94,14 +94,17 @@ class SxyPrn : MainAPI() {
         val headers = mapOf(
             "User-Agent" to "Mozilla/5.0 (Android 13; Mobile; rv:139.0) Gecko/139.0 Firefox/139.0"
         )
-
+        val headers1 = mapOf(
+            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0"
+        )
         // Fetch the current page
         val doc = app.get(
             url = "$mainUrl/${searchParam.replace(" ", "-")}.html?page=${(page - 1) * 30}",
-            headers = headers,
+            headers = headers1,
             interceptor = cfInterceptor
         ).document
 
+        Log.d("SxyPrnSearch", "$doc")
         // Extract all results
         val results = doc.select("a.js-pop").mapNotNull { it.toSearchResult() }
 
@@ -134,8 +137,7 @@ class SxyPrn : MainAPI() {
             title1 = document.selectFirst("div.post_text h1")?.ownText()?.substringBefore(".")
                 ?.replace(Regex("[^A-Za-z0-9 ]"), "")?.trim() ?: ""
         }
-        Log.e("SxyPrn", "Title: $production$starring$title1")
-
+        
         val title = production + starring + title1
         val poster = fixUrlNull(
             document.selectFirst("meta[property=og:image]")
