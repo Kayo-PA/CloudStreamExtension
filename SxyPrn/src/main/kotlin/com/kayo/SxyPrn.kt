@@ -106,7 +106,7 @@ class SxyPrn : MainAPI() {
 
         // Extract all results
         val results = doc.select("div.post_el_small").mapNotNull { it.toSearchResult() }
-        Log.d("SxyPrn", "Found $results")
+        Log.d("SxyPrn", doc.toString())
 
         // Determine if there’s a next page
         val hasNextPage = (doc.select("div#center_control a").size.takeIf { it > 0 } ?: 1) > page
