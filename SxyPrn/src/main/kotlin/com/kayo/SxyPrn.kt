@@ -77,15 +77,13 @@ class SxyPrn : MainAPI() {
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        val title = this.select("a.post_time").attr("title")
-        Log.d("SxyPrn", "Title: $title")
-        val href = fixUrl(this.select("a.post_time").attr("href"))
-        var posterUrl = fixUrl(this.select("div.vid_container div.post_vid_thumb img.mini_post_vid_thumb").attr("src"))
+        val title = this.attr("title")
+        val href = fixUrl(this.attr("href"))
+        var posterUrl = fixUrl(this.select("div.post_el_small_mob_ls img").attr("src"))
         if (posterUrl == "") {
             posterUrl =
-                fixUrl(this.select("div.vid_container div.post_vid_thumb img.mini_post_vid_thumb").attr("data-src"))
+                fixUrl(this.select("div.post_el_small_mob_ls img").attr("data-src"))
         }
-        Log.d("SxyPrn", "Poster URL: $posterUrl")
         return newMovieSearchResponse(title, href, TvType.Movie) {
             this.posterUrl = posterUrl
         }
@@ -94,7 +92,7 @@ class SxyPrn : MainAPI() {
     override suspend fun search(query: String, page: Int): SearchResponseList? {
         val searchParam = if (query == "latest") "NEW" else query
         val headers = mapOf(
-            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0"
+            "User-Agent" to "Mozilla/5.0 (Android 13; Mobile; rv:139.0) Gecko/139.0 Firefox/139.0"
         )
 
         // Fetch the current page
@@ -105,8 +103,7 @@ class SxyPrn : MainAPI() {
         ).document
 
         // Extract all results
-        val results = doc.select("div.post_el_small").mapNotNull { it.toSearchResult() }
-        Log.d("SxyPrn", doc.toString())
+        val results = doc.select("a.js-pop").mapNotNull { it.toSearchResult() }
 
         // Determine if there’s a next page
         val hasNextPage = (doc.select("div#center_control a").size.takeIf { it > 0 } ?: 1) > page
