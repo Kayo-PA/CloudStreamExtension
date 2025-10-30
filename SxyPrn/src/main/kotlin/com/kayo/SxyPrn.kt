@@ -18,12 +18,14 @@ import org.jsoup.nodes.Element
 import com.lagradost.cloudstream3.utils.newExtractorLink
 import com.lagradost.cloudstream3.LoadResponse
 import com.lagradost.cloudstream3.SearchResponse
+import com.lagradost.cloudstream3.SearchResponseList
 import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.fixUrl
 import com.lagradost.cloudstream3.fixUrlNull
 import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
+import com.lagradost.cloudstream3.newSearchResponseList
 
 class SxyPrn : MainAPI() {
     override var mainUrl = "https://www.sxyprn.com"
@@ -87,43 +89,30 @@ class SxyPrn : MainAPI() {
         }
     }
 
-    override suspend fun search(query: String): List<SearchResponse>? {
-        val searchResponse = mutableListOf<SearchResponse>()
+    override suspend fun search(query: String, page: Int): SearchResponseList? {
         val searchParam = if (query == "latest") "NEW" else query
-        val headers = mapOf("User-Agent" to "Mozilla/5.0 (Android 13; Mobile; rv:139.0) Gecko/139.0 Firefox/139.0")
+        val headers = mapOf(
+            "User-Agent" to "Mozilla/5.0 (Android 13; Mobile; rv:139.0) Gecko/139.0 Firefox/139.0"
+        )
 
-        // First page to get total page count
-        val firstDoc = app.get(
-            url = "$mainUrl/${searchParam.replace(" ", "-")}.html",
+        // Fetch the current page
+        val doc = app.get(
+            url = "$mainUrl/${searchParam.replace(" ", "-")}.html?page=${(page - 1) * 30}",
             headers = headers,
             interceptor = cfInterceptor
         ).document
 
-        // Get number of pages (fallback to 1 if not found)
-        val totalPages = firstDoc.select("div#center_control a").size.takeIf { it > 0 } ?: 1
+        // Extract all results
+        val results = doc.select("a.js-pop").mapNotNull { it.toSearchResult() }
 
-        for (i in 1..totalPages) {
-            val doc = if (i == 1) firstDoc else {
-                app.get(
-                    url = "$mainUrl/${searchParam.replace(" ", "-")}.html?page=${i * 30}",
-                    headers = headers,
-                    interceptor = cfInterceptor
-                ).document
-            }
+        // Determine if there’s a next page
+        val hasNextPage = (doc.select("div#center_control a").size.takeIf { it > 0 } ?: 1) > page
+        
 
-            val results = doc.select("a.js-pop").mapNotNull { it.toSearchResult() }
-
-            if (!searchResponse.containsAll(results)) {
-                searchResponse.addAll(results)
-            } else {
-                break
-            }
-
-            if (results.isEmpty()) break
-        }
-
-        return searchResponse
+        // Return in the new SearchResponseList format
+        return newSearchResponseList(results, hasNextPage)
     }
+
 
 
 
