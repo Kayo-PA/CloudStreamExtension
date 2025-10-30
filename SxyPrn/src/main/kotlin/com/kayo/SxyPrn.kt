@@ -95,31 +95,15 @@ class SxyPrn : MainAPI() {
         val headers = mapOf(
             "User-Agent" to "Mozilla/5.0 (Android 13; Mobile; rv:139.0) Gecko/139.0 Firefox/139.0"
         )
-        val headers1 = mapOf(
-            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0"
-        )
 
-        val desktopHeaders = mapOf(
-            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-                    "AppleWebKit/537.36 (KHTML, like Gecko) " +
-                    "Chrome/120.0.0.0 Safari/537.36",
-            "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Accept-Language" to "en-US,en;q=0.9",
-            "Connection" to "keep-alive",
-            "Upgrade-Insecure-Requests" to "1",
-            "Sec-Fetch-Dest" to "document",
-            "Sec-Fetch-Mode" to "navigate",
-            "Sec-Fetch-Site" to "none",
-            "Sec-Fetch-User" to "?1"
-        )
         // Fetch the current page
         val doc = app.get(
             url = "$mainUrl/${searchParam.replace(" ", "-")}.html?page=${(page - 1) * 30}",
-            headers = desktopHeaders,
+            headers = headers,
             interceptor = cfInterceptor
         ).document
 
-        Log.d("SxyPrnSearch", "$doc")
+//        Log.d("SxyPrnSearch", "$doc")
         // Extract all results
         val results = doc.select("a.js-pop").mapNotNull { it.toSearchResult() }
 
