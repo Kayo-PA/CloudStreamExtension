@@ -1,44 +1,44 @@
 package com.kayo
 
 import android.util.Log
-import com.lagradost.cloudstream3.HomePageList
-import com.lagradost.cloudstream3.HomePageResponse
-import com.lagradost.cloudstream3.MainAPI
-import com.lagradost.cloudstream3.MainPageRequest
-import com.lagradost.cloudstream3.TvType
-import com.lagradost.cloudstream3.VPNStatus
-import com.lagradost.cloudstream3.mainPageOf
+import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.network.CloudflareKiller
-import com.lagradost.cloudstream3.network.WebViewResolver
-import com.lagradost.cloudstream3.newHomePageResponse
-import com.lagradost.cloudstream3.utils.AppUtils
-import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.ExtractorLinkType
-import com.lagradost.cloudstream3.utils.Qualities
+import com.lagradost.cloudstream3.utils.*
 import org.jsoup.nodes.Element
-import com.lagradost.cloudstream3.utils.newExtractorLink
-import com.lagradost.cloudstream3.LoadResponse
-import com.lagradost.cloudstream3.SearchResponse
-import com.lagradost.cloudstream3.SearchResponseList
-import com.lagradost.cloudstream3.SubtitleFile
-import com.lagradost.cloudstream3.app
-import com.lagradost.cloudstream3.fixUrl
-import com.lagradost.cloudstream3.fixUrlNull
-import com.lagradost.cloudstream3.newMovieLoadResponse
-import com.lagradost.cloudstream3.newMovieSearchResponse
-import com.lagradost.cloudstream3.newSearchResponseList
+import java.net.URI
 
 class SxyPrnWin : MainAPI() {
-    override var mainUrl = "https://www.sxyprn.net"
+    override var mainUrl = "https://www.sxyprn.com"
     override var name = "SxyPrnWin"
     override val hasMainPage = true
     override val hasDownloadSupport = true
     override val vpnStatus = VPNStatus.MightBeNeeded
     override val supportedTypes = setOf(TvType.NSFW)
-    private val cfInterceptor = CloudflareKiller().apply {
-        WebViewResolver.webViewUserAgent =
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0"
+
+    // Cloudflare interceptor – single instance for the session
+    private val cfInterceptor by lazy { CloudflareKiller() }
+
+    // Keep track of hosts that are already cleared
+    private val cfPrimedHosts = mutableSetOf<String>()
+
+    // Your desired User-Agent string
+    private val customUA =
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0"
+
+    // Helper to make sure Cloudflare clearance cookies are available
+    private suspend fun ensureCfPrimed(url: String) {
+        val host = URI(url).host ?: return
+        if (cfPrimedHosts.contains(host)) return
+        try {
+            Log.d("SxyPrnWin", "Priming Cloudflare for $host")
+            // Trigger CloudflareKiller once to solve challenge and save cookies
+            app.get(url, interceptor = cfInterceptor, timeout = 20000L)
+            cfPrimedHosts.add(host)
+        } catch (e: Exception) {
+            Log.w("SxyPrnWin", "Priming failed for $host: ${e.message}")
+        }
     }
+
     override val mainPage = mainPageOf(
         "$mainUrl/new.html?page=" to "New Videos",
         "$mainUrl/new.html?sm=trending&page=" to "Trending",
@@ -50,99 +50,97 @@ class SxyPrnWin : MainAPI() {
     )
 
     override suspend fun getMainPage(
-        page: Int, request: MainPageRequest
+        page: Int,
+        request: MainPageRequest
     ): HomePageResponse {
-        var pageStr = ((page - 1) * 30).toString()
+        ensureCfPrimed(mainUrl)
 
+        val pageStr = ((page - 1) * 30).toString()
+        val headers = mapOf("User-Agent" to customUA)
 
-        val document = if ("page=" in request.data) {
-            app.get(request.data + pageStr, interceptor = cfInterceptor).document
-        } else if ("/blog/" in request.data) {
-            pageStr = ((page - 1) * 20).toString()
-            app.get(
-                request.data.replace(".html", "$pageStr.html"),
-                interceptor = cfInterceptor,
-            ).document
-        } else {
-            app.get(
+        val document = when {
+            "page=" in request.data -> app.get(request.data + pageStr, headers = headers).document
+            "/blog/" in request.data -> {
+                val newPage = ((page - 1) * 20).toString()
+                app.get(request.data.replace(".html", "$newPage.html"), headers = headers).document
+            }
+            else -> app.get(
                 request.data.replace(".html", ".html/$pageStr"),
-                interceptor = cfInterceptor,
+                headers = headers
             ).document
         }
-        val home = document.select("a.js-pop").mapNotNull {
-            it.toSearchResult()
-        }
+
+        val home = document.select("a.js-pop").mapNotNull { it.toSearchResult() }
+
         return newHomePageResponse(
             list = HomePageList(
-                name = request.name, list = home, isHorizontalImages = true
-            ), hasNext = true
+                name = request.name,
+                list = home,
+                isHorizontalImages = true
+            ),
+            hasNext = true
         )
     }
 
-    private fun Element.toSearchResult(): SearchResponse? {
-        val title = this.attr("title")
-        val href = fixUrl(this.attr("href"))
-        var posterUrl = fixUrl(this.select("div.post_el_small_mob_ls img").attr("src"))
-        if (posterUrl == "") {
-            posterUrl =
-                fixUrl(this.select("div.post_el_small_mob_ls img").attr("data-src"))
+    private fun Element.toSearchResult(): SearchResponse {
+        val title = attr("title")
+        val href = fixUrl(attr("href"))
+        var posterUrl = fixUrl(select("div.post_el_small_mob_ls img").attr("src"))
+        if (posterUrl.isBlank()) {
+            posterUrl = fixUrl(select("div.post_el_small_mob_ls img").attr("data-src"))
         }
         return newMovieSearchResponse(title, href, TvType.Movie) {
             this.posterUrl = posterUrl
         }
     }
 
-    override suspend fun search(query: String, page: Int): SearchResponseList? {
+    override suspend fun search(query: String, page: Int): SearchResponseList {
+        ensureCfPrimed(mainUrl)
+
         val searchParam = if (query == "latest") "NEW" else query
-        val headers = mapOf(
-            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0"
-        )
+        val headers = mapOf("User-Agent" to customUA)
+        val url = "$mainUrl/${searchParam.replace(" ", "-")}.html?page=${(page - 1) * 30}"
 
-        // Fetch the current page
-        val doc = app.get(
-            url = "$mainUrl/${searchParam.replace(" ", "-")}.html?page=${(page - 1) * 30}",
-            headers = headers,
-            interceptor = cfInterceptor
-        ).document
+        val doc = try {
+            app.get(url, headers = headers).document
+        } catch (_: Exception) {
+            // If blocked again, re-prime and retry once
+            ensureCfPrimed(mainUrl)
+            app.get(url, headers = headers).document
+        }
 
-        Log.d("SxyPrnWinSearch", "$doc")
-        // Extract all results
         val results = doc.select("a.js-pop").mapNotNull { it.toSearchResult() }
-
-        // Determine if there’s a next page
         val hasNextPage = (doc.select("div#center_control a").size.takeIf { it > 0 } ?: 1) > page
-        
-
-        // Return in the new SearchResponseList format
         return newSearchResponseList(results, hasNextPage)
     }
 
-
-
-
     override suspend fun load(url: String): LoadResponse {
-        val document = app.get(url, interceptor = cfInterceptor, timeout = 100L).document
+        ensureCfPrimed(mainUrl)
+        val headers = mapOf("User-Agent" to customUA)
+
+        val document = app.get(url, headers = headers, timeout = 15000L).document
         var production = ""
         var starring = ""
         var title1 = ""
-        if (document.selectFirst("div.post_text h1 b.sub_cat_s")?.toString() != null) {
-            production = "[" + document.selectFirst("div.post_text h1 b.sub_cat_s")?.text()
-                ?.replace(Regex("[^A-Za-z0-9 ]"), "") + "] "
+
+        document.selectFirst("div.post_text h1 b.sub_cat_s")?.let {
+            production = "[${it.text().replace(Regex("[^A-Za-z0-9 ]"), "")}] "
         }
-        if (document.select("div.post_text h1 a.ps_link.tdn.transition").toString() != "") {
-            starring =
-                document.select("div.post_text a.ps_link.tdn.transition")
-                    .joinToString { it.text().replace(Regex("[^A-Za-z0-9 ]"), "") } + " - "
+
+        if (document.select("div.post_text h1 a.ps_link.tdn.transition").isNotEmpty()) {
+            starring = document.select("div.post_text a.ps_link.tdn.transition")
+                .joinToString { it.text().replace(Regex("[^A-Za-z0-9 ]"), "") } + " - "
         }
-        if (document.selectFirst("div.post_text h1")?.ownText() != "") {
-            title1 = document.selectFirst("div.post_text h1")?.ownText()?.substringBefore(".")
-                ?.replace(Regex("[^A-Za-z0-9 ]"), "")?.trim() ?: ""
+
+        document.selectFirst("div.post_text h1")?.ownText()?.let {
+            title1 = it.substringBefore(".")
+                .replace(Regex("[^A-Za-z0-9 ]"), "")
+                .trim()
         }
-        
+
         val title = production + starring + title1
         val poster = fixUrlNull(
-            document.selectFirst("meta[property=og:image]")
-                ?.attr("content")
+            document.selectFirst("meta[property=og:image]")?.attr("content")
         )
 
         val recommendations = document.select("div.main_content div div.post_el_small").mapNotNull {
@@ -179,13 +177,16 @@ class SxyPrnWin : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        val document = app.get(data, interceptor = cfInterceptor).document
+        ensureCfPrimed(mainUrl)
+        val headers = mapOf("User-Agent" to customUA)
 
+        val document = app.get(data, headers = headers).document
         val parsed = AppUtils.parseJson<Map<String, String>>(
             document.select("span.vidsnfo").attr("data-vnfo")
         )
+
         val pid = parsed.keys.first()
-        var url = parsed[pid]!! // non-nullable
+        var url = parsed[pid]!!
         val host = "sxyprn.com"
 
         val tmp = url.split("/").toMutableList()
@@ -193,7 +194,7 @@ class SxyPrnWin : MainAPI() {
         updateUrl(tmp)
 
         url = mainUrl + tmp.joinToString("/")
-        val newurl = app.get(url, interceptor = cfInterceptor).url
+        val newurl = app.get(url, headers = headers).url
 
         callback.invoke(
             newExtractorLink(
@@ -209,5 +210,3 @@ class SxyPrnWin : MainAPI() {
         return true
     }
 }
-
-
