@@ -69,7 +69,6 @@ class SxyPrnWin : MainAPI() {
                 headers = headers
             ).document
         }
-
         val home = document.select("a.js-pop").mapNotNull { it.toSearchResult() }
 
         return newHomePageResponse(
@@ -108,7 +107,7 @@ class SxyPrnWin : MainAPI() {
             ensureCfPrimed(mainUrl)
             app.get(url, headers = headers).document
         }
-
+        Log.d("SxyprnWin",doc.toString())
         val results = doc.select("a.js-pop").mapNotNull { it.toSearchResult() }
         val hasNextPage = (doc.select("div#center_control a").size.takeIf { it > 0 } ?: 1) > page
         return newSearchResponseList(results, hasNextPage)
