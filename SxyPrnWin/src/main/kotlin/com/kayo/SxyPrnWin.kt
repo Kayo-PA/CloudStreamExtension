@@ -78,6 +78,7 @@ class SxyPrnWin : MainAPI() {
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
+        Log.d("sxyprnEle",this.toString())
         val title = this.attr("title")
         val href = fixUrl(this.attr("href"))
         var posterUrl = fixUrl(this.select("div.post_el_small_mob_ls img").attr("src"))
