@@ -36,6 +36,7 @@ class SxyPrnWin : MainAPI() {
     override val vpnStatus = VPNStatus.MightBeNeeded
     override val supportedTypes = setOf(TvType.NSFW)
     private val cfInterceptor = CustomCloudflareKiller()
+
     override val mainPage = mainPageOf(
         "$mainUrl/new.html?page=" to "New Videos",
         "$mainUrl/new.html?sm=trending&page=" to "Trending",
@@ -91,10 +92,14 @@ class SxyPrnWin : MainAPI() {
 
     override suspend fun search(query: String, page: Int): SearchResponseList? {
         val searchParam = if (query == "latest") "NEW" else query
+        val headers = mapOf(
+            "User-Agent" to "Mozilla/5.0 (Linux; Android 13; Pixel C; wv) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"
+        )
 
         // Fetch the current page
         val doc = app.get(
             url = "$mainUrl/${searchParam.replace(" ", "-")}.html?page=${(page - 1) * 30}",
+            headers = headers,
             interceptor = cfInterceptor
         )
         Log.d("SxyPrnWinSearchHeader", doc.okhttpResponse.request.headers.toString())
