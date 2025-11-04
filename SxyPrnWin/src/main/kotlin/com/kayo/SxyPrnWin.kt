@@ -2,7 +2,6 @@ package com.kayo
 
 import android.util.Log
 import com.kayo.helper.CustomCloudflareKiller
-import com.kayo.helper.CustomWebViewResolver
 import com.lagradost.cloudstream3.HomePageList
 import com.lagradost.cloudstream3.HomePageResponse
 import com.lagradost.cloudstream3.MainAPI
@@ -24,6 +23,7 @@ import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.fixUrl
 import com.lagradost.cloudstream3.fixUrlNull
+import com.lagradost.cloudstream3.network.WebViewResolver
 import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.newSearchResponseList
@@ -36,7 +36,7 @@ class SxyPrnWin : MainAPI() {
     override val vpnStatus = VPNStatus.MightBeNeeded
     override val supportedTypes = setOf(TvType.NSFW)
     private val cfInterceptor = CustomCloudflareKiller().apply {
-        CustomWebViewResolver.webViewUserAgent =
+        WebViewResolver.webViewUserAgent =
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0"
     }
     override val mainPage = mainPageOf(

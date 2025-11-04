@@ -6,6 +6,7 @@ import androidx.annotation.AnyThread
 import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.mvvm.debugWarning
 import com.lagradost.cloudstream3.mvvm.safe
+import com.lagradost.cloudstream3.network.WebViewResolver
 import com.lagradost.nicehttp.Requests.Companion.await
 import kotlinx.coroutines.runBlocking
 import okhttp3.Headers
@@ -65,8 +66,8 @@ class CustomCloudflareKiller : Interceptor {
      * Gets the headers with cookies, webview user agent included!
      * */
     fun getCookieHeaders(url: String): Headers {
-        val userAgentHeaders = CustomWebViewResolver.webViewUserAgent?.let {
-            mapOf("User-Agent" to it)
+        val userAgentHeaders = WebViewResolver.webViewUserAgent?.let {
+            mapOf("User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0")
         } ?: emptyMap()
 
         val hostCookies = savedCookies[URI(url).host] ?: emptyMap()
@@ -123,8 +124,8 @@ class CustomCloudflareKiller : Interceptor {
 
     private suspend fun proceed(request: Request, cookies: Map<String, String>): Response {
         // Use WebViewResolver.webViewUserAgent if available (your WebViewResolver implementation should set this)
-        val userAgentMap = CustomWebViewResolver.webViewUserAgent?.let {
-            mapOf("User-Agent" to it)
+        val userAgentMap = WebViewResolver.webViewUserAgent?.let {
+            mapOf("User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0")
         } ?: emptyMap()
 
         // Build cookie header string from provided cookies map
@@ -150,7 +151,7 @@ class CustomCloudflareKiller : Interceptor {
             Log.d(TAG, "Loading webview to solve cloudflare for ${request.url}")
 
             // Create resolver: set userAgent = null so resolver will use WebViewResolver.webViewUserAgent or system default.
-            val resolver = CustomWebViewResolver(
+            val resolver = WebViewResolver(
                 Regex(".^"), // never exit based on url
                 additionalUrls = listOf(Regex(".")),
                 userAgent = null,
