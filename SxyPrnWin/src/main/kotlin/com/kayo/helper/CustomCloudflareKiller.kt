@@ -6,6 +6,7 @@ import androidx.annotation.AnyThread
 import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.mvvm.debugWarning
 import com.lagradost.cloudstream3.mvvm.safe
+import com.lagradost.cloudstream3.network.WebViewResolver
 import com.lagradost.nicehttp.Requests.Companion.await
 import kotlinx.coroutines.runBlocking
 import okhttp3.Headers
@@ -65,7 +66,7 @@ class CustomCloudflareKiller : Interceptor {
      * Gets the headers with cookies, webview user agent included!
      * */
     fun getCookieHeaders(url: String): Headers {
-        val userAgentHeaders = CustomWebViewResolver.webViewUserAgent1?.let {
+        val userAgentHeaders = WebViewResolver.webViewUserAgent?.let {
             mapOf("User-Agent" to it)
         } ?: emptyMap()
 
@@ -123,7 +124,7 @@ class CustomCloudflareKiller : Interceptor {
 
     private suspend fun proceed(request: Request, cookies: Map<String, String>): Response {
         // Use WebViewResolver.webViewUserAgent if available (your WebViewResolver implementation should set this)
-        val userAgentMap = CustomWebViewResolver.webViewUserAgent1?.let {
+        val userAgentMap = WebViewResolver.webViewUserAgent?.let {
             mapOf("User-Agent" to it)
         } ?: emptyMap()
 
@@ -150,10 +151,10 @@ class CustomCloudflareKiller : Interceptor {
             Log.d(TAG, "Loading webview to solve cloudflare for ${request.url}")
 
             // Create resolver: set userAgent = null so resolver will use WebViewResolver.webViewUserAgent or system default.
-            val resolver = CustomWebViewResolver(
+            val resolver = WebViewResolver(
                 Regex(".^"), // never exit based on url
                 additionalUrls = listOf(Regex(".")),
-                userAgent = null,
+                userAgent = "Mozilla/5.0 (Linux; Android 13; Pixel C; wv) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36",
                 useOkhttp = false,
 
             )
