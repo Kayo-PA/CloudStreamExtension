@@ -6,7 +6,6 @@ import androidx.annotation.AnyThread
 import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.mvvm.debugWarning
 import com.lagradost.cloudstream3.mvvm.safe
-import com.lagradost.cloudstream3.network.WebViewResolver
 import com.lagradost.nicehttp.Requests.Companion.await
 import kotlinx.coroutines.runBlocking
 import okhttp3.Headers
@@ -66,7 +65,7 @@ class CustomCloudflareKiller : Interceptor {
      * Gets the headers with cookies, webview user agent included!
      * */
     fun getCookieHeaders(url: String): Headers {
-        val userAgentHeaders = WebViewResolver.webViewUserAgent?.let {
+        val userAgentHeaders = CustomWebViewResolver.webViewUserAgent?.let {
             mapOf("User-Agent" to it)
         } ?: emptyMap()
 
@@ -124,7 +123,7 @@ class CustomCloudflareKiller : Interceptor {
 
     private suspend fun proceed(request: Request, cookies: Map<String, String>): Response {
         // Use WebViewResolver.webViewUserAgent if available (your WebViewResolver implementation should set this)
-        val userAgentMap = WebViewResolver.webViewUserAgent?.let {
+        val userAgentMap = CustomWebViewResolver.webViewUserAgent?.let {
             mapOf("User-Agent" to it)
         } ?: emptyMap()
 
@@ -151,7 +150,7 @@ class CustomCloudflareKiller : Interceptor {
             Log.d(TAG, "Loading webview to solve cloudflare for ${request.url}")
 
             // Create resolver: set userAgent = null so resolver will use WebViewResolver.webViewUserAgent or system default.
-            val resolver = WebViewResolver(
+            val resolver = CustomWebViewResolver(
                 Regex(".^"), // never exit based on url
                 additionalUrls = listOf(Regex(".")),
                 userAgent = null,
@@ -159,7 +158,7 @@ class CustomCloudflareKiller : Interceptor {
             )
 
             // Launch WebView resolving on main thread (resolver implementation should handle threading)
-            resolver.resolveUsingWebView(url) {
+            resolver.resolveUsingWebView(request) {
                 trySolveWithSavedCookies(request)
             }
         }
