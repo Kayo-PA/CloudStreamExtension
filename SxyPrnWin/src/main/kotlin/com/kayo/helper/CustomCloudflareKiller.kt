@@ -56,7 +56,7 @@ class CustomCloudflareKiller : Interceptor {
         }
         for ((k, v) in merged) {
             // Headers.Builder throws if key or value contains '\n' etc; assume values are safe
-            builder.set(k, v)
+            builder[k] = v
         }
         return builder.build()
     }
@@ -65,7 +65,7 @@ class CustomCloudflareKiller : Interceptor {
      * Gets the headers with cookies, webview user agent included!
      * */
     fun getCookieHeaders(url: String): Headers {
-        val userAgentHeaders = CustomWebViewResolver.webViewUserAgent1?.let {
+        val userAgentHeaders = CustomWebViewResolver.webViewUserAgent?.let {
             mapOf("User-Agent" to it)
         } ?: emptyMap()
 
@@ -123,7 +123,7 @@ class CustomCloudflareKiller : Interceptor {
 
     private suspend fun proceed(request: Request, cookies: Map<String, String>): Response {
         // Use WebViewResolver.webViewUserAgent if available (your WebViewResolver implementation should set this)
-        val userAgentMap = CustomWebViewResolver.webViewUserAgent1?.let {
+        val userAgentMap = CustomWebViewResolver.webViewUserAgent?.let {
             mapOf("User-Agent" to it)
         } ?: emptyMap()
 
@@ -154,11 +154,12 @@ class CustomCloudflareKiller : Interceptor {
                 Regex(".^"), // never exit based on url
                 additionalUrls = listOf(Regex(".")),
                 userAgent = null,
-                useOkhttp = false
+                useOkhttp = false,
+
             )
 
             // Launch WebView resolving on main thread (resolver implementation should handle threading)
-            resolver.resolveUsingWebView(request) {
+            resolver.resolveUsingWebView(url) {
                 trySolveWithSavedCookies(request)
             }
         }
