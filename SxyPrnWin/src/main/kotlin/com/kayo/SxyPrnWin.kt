@@ -35,8 +35,10 @@ class SxyPrnWin : MainAPI() {
     override val hasDownloadSupport = true
     override val vpnStatus = VPNStatus.MightBeNeeded
     override val supportedTypes = setOf(TvType.NSFW)
-    private val cfInterceptor = CloudflareKiller()
-
+    private val cfInterceptor = CloudflareKiller().apply {
+        WebViewResolver.webViewUserAgent =
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0"
+    }
     override val mainPage = mainPageOf(
         "$mainUrl/new.html?page=" to "New Videos",
         "$mainUrl/new.html?sm=trending&page=" to "Trending",
