@@ -105,6 +105,7 @@ class SxyPrnWin : MainAPI() {
 
         Log.d("SxyPrnWinSearch", "$doc")
         val results = doc.select("a.js-pop").mapNotNull { it.toSearchResult() }
+        Log.d("SxyPrnWinSearchResults", "$results")
         val hasNextPage = (doc.select("div#center_control a").size.takeIf { it > 0 } ?: 1) > page
 
         return newSearchResponseList(results, hasNextPage)
