@@ -44,16 +44,16 @@ class CustomWebViewResolver(
 ) : Interceptor {
 
     companion object {
-        var webViewUserAgent: String? = null
+        var webViewUserAgent1: String? = null
         const val DEFAULT_TIMEOUT = 60_000L
         private const val TAG = "WebViewResolver"
 
-        fun getWebViewUserAgent(): String? {
-            return webViewUserAgent ?: (getContext() as? Context)?.let { ctx ->
+        fun getwebViewUserAgent1(): String? {
+            return webViewUserAgent1 ?: (getContext() as? Context)?.let { ctx ->
                 runBlocking {
                     mainWork {
                         WebView(ctx).settings.userAgentString.also { userAgent ->
-                            webViewUserAgent = userAgent
+                            webViewUserAgent1 = userAgent
                         }
                     }
                 }
@@ -130,7 +130,7 @@ class CustomWebViewResolver(
                     settings.javaScriptEnabled = true
                     settings.domStorageEnabled = true
 
-                    webViewUserAgent = settings.userAgentString
+                    webViewUserAgent1 = settings.userAgentString
                     if (userAgent != null) {
                         settings.userAgentString = userAgent
                     }
