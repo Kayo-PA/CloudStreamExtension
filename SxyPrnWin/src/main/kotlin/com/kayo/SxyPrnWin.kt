@@ -104,7 +104,7 @@ class SxyPrnWin : MainAPI() {
             headers = headers,
             interceptor = cfInterceptor
         )
-        Log.d("SxyPrnWinSearchHeader", doc.headers.toString())
+        Log.d("SxyPrnWinSearchHeader", doc.okhttpResponse.request.headers.toString())
         Log.d("SxyPrnWinSearchCookies", doc.cookies.toString())
         Log.d("SxyPrnWinSearchResponse", "$doc")
         Log.d("SxyPrnWinSearchPage", "${doc.document}")
