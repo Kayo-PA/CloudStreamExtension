@@ -30,7 +30,7 @@ import com.lagradost.cloudstream3.newSearchResponseList
 
 class SxyPrnWin : MainAPI() {
     override var mainUrl = "https://www.sxyprn.net"
-    override var name = "Sxyprn"
+    override var name = "SxyPrnWin"
     override val hasMainPage = true
     override val hasDownloadSupport = true
     override val vpnStatus = VPNStatus.MightBeNeeded
