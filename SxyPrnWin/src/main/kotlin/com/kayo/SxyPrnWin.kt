@@ -75,8 +75,9 @@ class SxyPrnWin : MainAPI() {
         val host = try { URI(url).host } catch (e: Exception) { null } ?: return
         if (cfPrimedHosts.contains(host)) return
         try {
-            Log.d("SxyPrnWin", "Priming Cloudflare for $host")
-            app.get(url, interceptor = cfInterceptor, timeout = 20000L)
+
+
+            Log.d("SxyPrnWin", app.get(url, interceptor = cfInterceptor, timeout = 20000L).document.toString())
             cfPrimedHosts.add(host)
         } catch (e: Exception) {
             Log.w("SxyPrnWin", "Priming failed for $host: ${e.message}")
