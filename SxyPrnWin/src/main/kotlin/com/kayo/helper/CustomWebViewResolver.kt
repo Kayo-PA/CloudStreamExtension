@@ -43,14 +43,14 @@ class CustomWebViewResolver(
         private const val DEFAULT_USER_AGENT =
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36"
 
-        var webViewUserAgent: String? = null
+        var webViewUserAgent1: String? = null
 
         fun getWebViewUserAgent(): String? {
-            return webViewUserAgent ?: (getContext() as? Context)?.let { ctx ->
+            return webViewUserAgent1 ?: (getContext() as? Context)?.let { ctx ->
                 runBlocking {
                     mainWork {
                         WebView(ctx).settings.userAgentString.also {
-                            webViewUserAgent = it
+                            webViewUserAgent1 = it
                         }
                     }
                 }

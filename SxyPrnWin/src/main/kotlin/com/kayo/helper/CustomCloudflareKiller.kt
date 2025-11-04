@@ -65,7 +65,7 @@ class CustomCloudflareKiller : Interceptor {
      * Gets the headers with cookies, webview user agent included!
      * */
     fun getCookieHeaders(url: String): Headers {
-        val userAgentHeaders = CustomWebViewResolver.webViewUserAgent?.let {
+        val userAgentHeaders = CustomWebViewResolver.webViewUserAgent1?.let {
             mapOf("User-Agent" to it)
         } ?: emptyMap()
 
@@ -123,7 +123,7 @@ class CustomCloudflareKiller : Interceptor {
 
     private suspend fun proceed(request: Request, cookies: Map<String, String>): Response {
         // Use WebViewResolver.webViewUserAgent if available (your WebViewResolver implementation should set this)
-        val userAgentMap = CustomWebViewResolver.webViewUserAgent?.let {
+        val userAgentMap = CustomWebViewResolver.webViewUserAgent1?.let {
             mapOf("User-Agent" to it)
         } ?: emptyMap()
 
