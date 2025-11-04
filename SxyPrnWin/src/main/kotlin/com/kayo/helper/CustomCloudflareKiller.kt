@@ -154,7 +154,7 @@ class CustomCloudflareKiller : Interceptor {
             val resolver = WebViewResolver(
                 Regex(".^"), // never exit based on url
                 additionalUrls = listOf(Regex(".")),
-                userAgent = "Mozilla/5.0 (Linux; Android 13; Pixel C; wv) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36",
+                userAgent = null,
                 useOkhttp = false
             )
 
