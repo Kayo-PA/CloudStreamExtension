@@ -29,7 +29,7 @@ import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.newSearchResponseList
 
 class SxyPrnWin : MainAPI() {
-    override var mainUrl = "https://www.sxyprn.com"
+    override var mainUrl = "https://www.sxyprn.net"
     override var name = "Sxyprn"
     override val hasMainPage = true
     override val hasDownloadSupport = true
