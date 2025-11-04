@@ -1,5 +1,8 @@
 // use an integer for version numbers
-version = 6
+version = 7
+dependencies {
+    implementation("androidx.annotation:annotation-jvm:1.9.1")
+}
 
 cloudstream {
     // All of these properties are optional, you can safely remove them

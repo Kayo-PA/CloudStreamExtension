@@ -1,30 +1,32 @@
 package com.kayo
 
 import android.util.Log
-import com.lagradost.cloudstream3.*
-import com.lagradost.cloudstream3.network.CloudflareKiller
-import com.lagradost.cloudstream3.utils.*
+import com.kayo.helper.CustomCloudflareKiller
+import com.kayo.helper.CustomWebViewResolver
+import com.lagradost.cloudstream3.HomePageList
+import com.lagradost.cloudstream3.HomePageResponse
+import com.lagradost.cloudstream3.MainAPI
+import com.lagradost.cloudstream3.MainPageRequest
+import com.lagradost.cloudstream3.TvType
+import com.lagradost.cloudstream3.VPNStatus
+import com.lagradost.cloudstream3.mainPageOf
+import com.lagradost.cloudstream3.newHomePageResponse
+import com.lagradost.cloudstream3.utils.AppUtils
+import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
+import com.lagradost.cloudstream3.utils.Qualities
 import org.jsoup.nodes.Element
-import okhttp3.Interceptor
-import okhttp3.Response
-
-fun Interceptor.Chain.withRequest(request: okhttp3.Request): Interceptor.Chain {
-    return object : Interceptor.Chain by this {
-        override fun request() = request
-    }
-}
-
-class CustomCfkInterceptor(private val cf: CloudflareKiller) : Interceptor {
-    override fun intercept(chain: Interceptor.Chain): Response {
-        val request = chain.request().newBuilder()
-            .header(
-                "User-Agent",
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0"
-            )
-            .build()
-        return cf.intercept(chain.withRequest(request))
-    }
-}
+import com.lagradost.cloudstream3.utils.newExtractorLink
+import com.lagradost.cloudstream3.LoadResponse
+import com.lagradost.cloudstream3.SearchResponse
+import com.lagradost.cloudstream3.SearchResponseList
+import com.lagradost.cloudstream3.SubtitleFile
+import com.lagradost.cloudstream3.app
+import com.lagradost.cloudstream3.fixUrl
+import com.lagradost.cloudstream3.fixUrlNull
+import com.lagradost.cloudstream3.newMovieLoadResponse
+import com.lagradost.cloudstream3.newMovieSearchResponse
+import com.lagradost.cloudstream3.newSearchResponseList
 
 class SxyPrnWin : MainAPI() {
     override var mainUrl = "https://www.sxyprn.net"
@@ -33,9 +35,10 @@ class SxyPrnWin : MainAPI() {
     override val hasDownloadSupport = true
     override val vpnStatus = VPNStatus.MightBeNeeded
     override val supportedTypes = setOf(TvType.NSFW)
-
-    private val cfInterceptor = CustomCfkInterceptor(CloudflareKiller())
-
+    private val cfInterceptor = CustomCloudflareKiller().apply {
+        CustomWebViewResolver.webViewUserAgent =
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0"
+    }
     override val mainPage = mainPageOf(
         "$mainUrl/new.html?page=" to "New Videos",
         "$mainUrl/new.html?sm=trending&page=" to "Trending",
@@ -51,6 +54,7 @@ class SxyPrnWin : MainAPI() {
     ): HomePageResponse {
         var pageStr = ((page - 1) * 30).toString()
 
+
         val document = if ("page=" in request.data) {
             app.get(request.data + pageStr, interceptor = cfInterceptor).document
         } else if ("/blog/" in request.data) {
@@ -65,11 +69,9 @@ class SxyPrnWin : MainAPI() {
                 interceptor = cfInterceptor,
             ).document
         }
-
         val home = document.select("a.js-pop").mapNotNull {
             it.toSearchResult()
         }
-
         return newHomePageResponse(
             list = HomePageList(
                 name = request.name, list = home, isHorizontalImages = true
@@ -78,7 +80,6 @@ class SxyPrnWin : MainAPI() {
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        Log.d("sxyprnEle",this.toString())
         val title = this.attr("title")
         val href = fixUrl(this.attr("href"))
         var posterUrl = fixUrl(this.select("div.post_el_small_mob_ls img").attr("src"))
@@ -97,21 +98,27 @@ class SxyPrnWin : MainAPI() {
             "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:144.0) Gecko/20100101 Firefox/144.0"
         )
 
+        // Fetch the current page
         val doc = app.get(
             url = "$mainUrl/${searchParam.replace(" ", "-")}.html?page=${(page - 1) * 30}",
             headers = headers,
             interceptor = cfInterceptor
         ).document
-        val doc1 = app.get(
-            url = "$mainUrl/${searchParam.replace(" ", "-")}.html?page=${(page - 1) * 30}",
-            headers = headers).document
-        Log.d("SxyPrnWinSearch", "$doc1")
+
+        Log.d("SxyPrnWinSearch", "$doc")
+        // Extract all results
         val results = doc.select("a.js-pop").mapNotNull { it.toSearchResult() }
-        Log.d("SxyPrnWinSearchResults", "$results")
+
+        // Determine if there’s a next page
         val hasNextPage = (doc.select("div#center_control a").size.takeIf { it > 0 } ?: 1) > page
 
+
+        // Return in the new SearchResponseList format
         return newSearchResponseList(results, hasNextPage)
     }
+
+
+
 
     override suspend fun load(url: String): LoadResponse {
         val document = app.get(url, interceptor = cfInterceptor, timeout = 100L).document
@@ -134,7 +141,8 @@ class SxyPrnWin : MainAPI() {
 
         val title = production + starring + title1
         val poster = fixUrlNull(
-            document.selectFirst("meta[property=og:image]")?.attr("content")
+            document.selectFirst("meta[property=og:image]")
+                ?.attr("content")
         )
 
         val recommendations = document.select("div.main_content div div.post_el_small").mapNotNull {
@@ -177,7 +185,7 @@ class SxyPrnWin : MainAPI() {
             document.select("span.vidsnfo").attr("data-vnfo")
         )
         val pid = parsed.keys.first()
-        var url = parsed[pid]!!
+        var url = parsed[pid]!! // non-nullable
         val host = "sxyprn.com"
 
         val tmp = url.split("/").toMutableList()
@@ -201,3 +209,5 @@ class SxyPrnWin : MainAPI() {
         return true
     }
 }
+
+
