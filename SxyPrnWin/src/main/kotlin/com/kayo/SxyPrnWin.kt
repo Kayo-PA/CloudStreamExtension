@@ -103,14 +103,16 @@ class SxyPrnWin : MainAPI() {
             url = "$mainUrl/${searchParam.replace(" ", "-")}.html?page=${(page - 1) * 30}",
             headers = headers,
             interceptor = cfInterceptor
-        ).document
-
-        Log.d("SxyPrnWinSearch", "$doc")
+        )
+        Log.d("SxyPrnWinSearchHeader", doc.headers.toString())
+        Log.d("SxyPrnWinSearchCookies", doc.cookies.toString())
+        Log.d("SxyPrnWinSearchResponse", "$doc")
+        Log.d("SxyPrnWinSearchPage", "${doc.document}")
         // Extract all results
-        val results = doc.select("a.js-pop").mapNotNull { it.toSearchResult() }
+        val results = doc.document.select("a.js-pop").mapNotNull { it.toSearchResult() }
 
         // Determine if there’s a next page
-        val hasNextPage = (doc.select("div#center_control a").size.takeIf { it > 0 } ?: 1) > page
+        val hasNextPage = (doc.document.select("div#center_control a").size.takeIf { it > 0 } ?: 1) > page
 
 
         // Return in the new SearchResponseList format
