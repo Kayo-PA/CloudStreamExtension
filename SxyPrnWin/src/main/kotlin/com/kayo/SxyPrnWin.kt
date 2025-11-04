@@ -8,7 +8,7 @@ import org.jsoup.nodes.Element
 import java.net.URI
 
 class SxyPrnWin : MainAPI() {
-    override var mainUrl = "https://www.sxyprn.com"
+    override var mainUrl = "https://www.sxyprn.net"
     override var name = "SxyPrnWin"
     override val hasMainPage = true
     override val hasDownloadSupport = true
