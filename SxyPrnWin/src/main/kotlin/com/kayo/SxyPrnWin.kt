@@ -93,7 +93,7 @@ class SxyPrnWin : MainAPI() {
     override suspend fun search(query: String, page: Int): SearchResponseList? {
         val searchParam = if (query == "latest") "NEW" else query
         val headers = mapOf(
-            "User-Agent" to "Mozilla/5.0 (Linux; Android 13; Pixel C; wv) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"
+            "User-Agent" to "Mozilla/5.0 (Linux; Android 13; motorola edge 20 Build/T1RGS33.135-109-9-29; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/143.0.7499.3 Safari/537.36"
         )
 
         // Fetch the current page
