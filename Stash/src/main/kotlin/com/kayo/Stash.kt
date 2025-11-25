@@ -186,7 +186,7 @@ class Stash : MainAPI() {
     }
 
     suspend fun stashGraphQL(bodyJson: String): String {
-        val dataMap = mapOf("" to bodyJson)
+
 
         return app.post(
             url = "$mainUrl/graphql",
@@ -194,7 +194,7 @@ class Stash : MainAPI() {
                 "Content-Type" to "application/json",
                 "ApiKey" to apiKey
             ),
-            json = dataMap
+            json = bodyJson
         ).text
     }
 
