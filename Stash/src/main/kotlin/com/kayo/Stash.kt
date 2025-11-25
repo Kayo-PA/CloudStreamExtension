@@ -189,19 +189,13 @@ class Stash : MainAPI() {
     }
 
     suspend fun stashGraphQL(bodyJson: String): String {
-        val buffer = Buffer()
-        val jsonMediaType = "application/json; charset=utf-8".toMediaType()
-        val request = bodyJson.toRequestBody(jsonMediaType).writeTo(buffer)
-        Log.d("stashGraphQLJson", buffer.readUtf8())
-        Log.d("stashGraphQL", "stashGraphQL: $bodyJson")
-
         return app.post(
             url = "$mainUrl/graphql",
             headers = mapOf(
                 "Content-Type" to "application/json",
                 "ApiKey" to apiKey
             ),
-            json = bodyJson.toRequestBody(jsonMediaType)
+            json = bodyJson
         ).text
     }
 
