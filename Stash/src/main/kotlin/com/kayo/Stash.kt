@@ -193,6 +193,7 @@ class Stash : MainAPI() {
 
     suspend fun stashGraphQL(bodyJson: String): NiceResponse {
         val jsonMediaType = "application/json; charset=utf-8".toMediaType()
+        Log.d("jsonMediaType", bodyJson.toRequestBody(jsonMediaType).toString())
         return app.post(
             url = "$mainUrl/graphql",
             headers = mapOf(
@@ -200,7 +201,7 @@ class Stash : MainAPI() {
                 "Accept" to "application/json",
                 "ApiKey" to apiKey
             ),
-            json = bodyJson.toRequestBody(jsonMediaType),
+            json = bodyJson.toRequestBody(jsonMediaType).toString(),
             cacheTime = 0,                 // << disable cache
             allowRedirects = true,
         )
