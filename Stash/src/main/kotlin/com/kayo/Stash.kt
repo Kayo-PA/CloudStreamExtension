@@ -162,7 +162,7 @@ class Stash : MainAPI() {
                 this.trailers =
                     listOf(
                         TrailerData(
-                            extractorUrl = (sceneFull.paths.preview + "?apikey=" + apiKey),
+                            extractorUrl = (sceneFull.paths.preview + "?apikey=" + apiKey+"&ext=.mp4"),
                             referer="",
                             raw = true,
                             headers = mapOf("ApiKey" to apiKey)
@@ -182,8 +182,6 @@ class Stash : MainAPI() {
     ): Boolean {
 
         val id = data.substringAfterLast("/")
-        Log.d("loadLinks", "id: $id")
-        Log.d("loadLinks", data)
         val bodyJson = findSceneById(id.toInt())
         val initResponse = stashGraphQL(bodyJson)
         val parsed = gson.fromJson(initResponse, FindSceneResponse::class.java)
