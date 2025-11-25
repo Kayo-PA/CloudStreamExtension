@@ -26,6 +26,7 @@ import com.google.gson.Gson
 import com.kayo.helper.FindScenesResponse
 import com.kayo.helper.getAllScenes
 import com.lagradost.cloudstream3.SearchQuality
+import com.lagradost.nicehttp.NiceResponse
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import okio.Buffer
@@ -53,8 +54,10 @@ class Stash : MainAPI() {
     ): HomePageResponse {
 
         val jsonBody = getAllScenes(page)
-        val response = stashGraphQL(jsonBody)
-        Log.d("response123",response)
+        val initResponse = stashGraphQL(jsonBody)
+        val response = initResponse.text
+        Log.d("response123Header",initResponse.headers.toString())
+        Log.d("response123Body",initResponse.body.string())
 
         val parsed = gson.fromJson(response, FindScenesResponse::class.java)
         val scenes = parsed.data?.findScenes?.scenes ?: emptyList()
@@ -188,7 +191,7 @@ class Stash : MainAPI() {
         return true
     }
 
-    suspend fun stashGraphQL(bodyJson: String): String {
+    suspend fun stashGraphQL(bodyJson: String): NiceResponse {
         return app.post(
             url = "$mainUrl/graphql",
             headers = mapOf(
@@ -196,7 +199,7 @@ class Stash : MainAPI() {
                 "ApiKey" to apiKey
             ),
             json = bodyJson
-        ).text
+        )
     }
 
 }
