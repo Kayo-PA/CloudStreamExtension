@@ -32,6 +32,7 @@ import com.lagradost.cloudstream3.Actor
 import com.lagradost.cloudstream3.ActorData
 import com.lagradost.cloudstream3.SearchQuality
 import com.lagradost.cloudstream3.TrailerData
+import com.lagradost.cloudstream3.newSubtitleFile
 import kotlinx.coroutines.joinAll
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
@@ -179,23 +180,37 @@ class Stash : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        val document = app.get(data).document
+        val id = data.substringAfterLast("/")
+        val bodyJson = findSceneById(id.toInt())
+        val initResponse = stashGraphQL(bodyJson)
+        val parsed = gson.fromJson(initResponse, FindSceneResponse::class.java)
+        val sceneFull = parsed.data?.findScene ?: return false
 
-        val parsed = AppUtils.parseJson<Map<String, String>>(
-            document.select("span.vidsnfo").attr("data-vnfo")
-        )
+        val captionUrl = sceneFull.paths?.caption+"?lang=en&type=vtt"
+        if (captionUrl.isNotBlank()) {
+            subtitleCallback.invoke(
+                newSubtitleFile(
+                    "English",
+                    captionUrl
+                )
+            )
+        }
 
-        callback.invoke(
-            newExtractorLink(
-                source = this.name,
-                name = this.name,
-                url = parsed.toString(),
-                type = ExtractorLinkType.VIDEO
-            ) {
-                this.referer = ""
-                this.quality = Qualities.Unknown.value
-            }
-        )
+        val streams = sceneFull.sceneStreams ?: emptyList()
+
+
+
+        for (stream in streams) {
+            val streamUrl = stream.url ?: continue
+            callback.invoke(
+                newExtractorLink(
+                    source = "Stash",
+                    name = stream.label ?: "Stream",
+                    url = streamUrl,
+                    type = ExtractorLinkType.VIDEO
+                )
+            )
+        }
         return true
     }
 
