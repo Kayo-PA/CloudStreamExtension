@@ -23,12 +23,21 @@ import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.newSearchResponseList
 import com.google.gson.Gson
+import com.kayo.helper.FindSceneResponse
 import com.kayo.helper.FindScenesResponse
+import com.kayo.helper.SceneItem
+import com.kayo.helper.findSceneById
 import com.kayo.helper.getAllScenes
+import com.lagradost.cloudstream3.Actor
+import com.lagradost.cloudstream3.ActorData
 import com.lagradost.cloudstream3.SearchQuality
+import com.lagradost.cloudstream3.TrailerData
+import kotlinx.coroutines.joinAll
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import kotlin.collections.emptyList
+import kotlin.time.DurationUnit
 
 
 class Stash : MainAPI() {
@@ -92,7 +101,6 @@ class Stash : MainAPI() {
     override suspend fun search(query: String, page: Int): SearchResponseList? {
         val bodyJson = getAllScenes(page, query)
         val initResponse = stashGraphQL(bodyJson)
-        Log.d("response123Header",initResponse)
         val parsed = gson.fromJson(initResponse, FindScenesResponse::class.java)
         val result = parsed.data?.findScenes ?: return null
 
@@ -131,38 +139,37 @@ class Stash : MainAPI() {
 
 
     override suspend fun load(url: String): LoadResponse {
-        val document = app.get(url, timeout = 100L).document
-        var production = ""
-        var starring = ""
-        var title1 = ""
-        if (document.selectFirst("div.post_text h1 b.sub_cat_s")?.toString() != null) {
-            production = "[" + document.selectFirst("div.post_text h1 b.sub_cat_s")?.text()
-                ?.replace(Regex("[^A-Za-z0-9 ]"), "") + "] "
-        }
-        if (document.select("div.post_text h1 a.ps_link.tdn.transition").toString() != "") {
-            starring =
-                document.select("div.post_text a.ps_link.tdn.transition")
-                    .joinToString { it.text().replace(Regex("[^A-Za-z0-9 ]"), "") } + " - "
-        }
-        if (document.selectFirst("div.post_text h1")?.ownText() != "") {
-            title1 = document.selectFirst("div.post_text h1")?.ownText()?.substringBefore(".")
-                ?.replace(Regex("[^A-Za-z0-9 ]"), "")?.trim() ?: ""
-        }
-
-        val title = production + starring + title1
-        val poster = fixUrlNull(
-            document.selectFirst("meta[property=og:image]")
-                ?.attr("content")
-        )
+        val bodyJson = findSceneById(url.toInt())
+        val initResponse = stashGraphQL(bodyJson)
+        val parsed = gson.fromJson(initResponse, FindSceneResponse::class.java)
+        val sceneFull = parsed.data?.findScene
+        val preview = sceneFull?.paths?.preview?.takeIf { it.isNotBlank() }
+        val actors = sceneFull?.performers
+            ?.map { performer ->
+                ActorData(
+                    Actor(
+                        performer.name ?: "Unknown",
+                        (performer.image_path + "&apikey=" + apiKey)   // or your own URL builder
+                    )
+                )
+            } ?: emptyList()
 
 
-        val description = document.select("div.post_text h1").text()
+        return newMovieLoadResponse(sceneFull?.title ?: "" , url, TvType.NSFW, url) {
+            this.posterUrl = sceneFull?.paths?.screenshot+"&apikey="+apiKey
+            this.plot = sceneFull?.details
+            this.tags = sceneFull?.tags?.map { it.name.toString() }
+            this.actors = actors
+            this.duration = ((sceneFull?.files?.firstOrNull()?.duration ?: 0.0) / 60).toInt()
+            this.year = sceneFull?.date?.substring(0, 4)?.toInt()
+//            this.backgroundPosterUrl =  sceneFull?.paths?.screenshot+"&apikey="+apiKey
+            if(preview != null){
+                this.trailers =
+                    listOf(TrailerData((sceneFull.paths.preview + "&apikey=" + apiKey), "", true)) as MutableList<TrailerData>
+            }
+            }
 
-        return newMovieLoadResponse(title, url, TvType.NSFW, url) {
-            this.posterUrl = poster
-            this.plot = description
         }
-    }
 
 
     override suspend fun loadLinks(
