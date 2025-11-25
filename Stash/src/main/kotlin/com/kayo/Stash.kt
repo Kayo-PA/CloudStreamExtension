@@ -26,7 +26,10 @@ import com.google.gson.Gson
 import com.kayo.helper.FindScenesResponse
 import com.kayo.helper.getAllScenes
 import com.lagradost.cloudstream3.SearchQuality
+import com.lagradost.cloudstream3.utils.AppUtils.toJson
 import com.lagradost.nicehttp.NiceResponse
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 
 class Stash : MainAPI() {
 
@@ -189,6 +192,7 @@ class Stash : MainAPI() {
     }
 
     suspend fun stashGraphQL(bodyJson: String): NiceResponse {
+        val jsonMediaType = "application/json; charset=utf-8".toMediaType()
         return app.post(
             url = "$mainUrl/graphql",
             headers = mapOf(
@@ -196,10 +200,9 @@ class Stash : MainAPI() {
                 "Accept" to "application/json",
                 "ApiKey" to apiKey
             ),
-            json = bodyJson,
+            json = bodyJson.toRequestBody(jsonMediaType),
             cacheTime = 0,                 // << disable cache
             allowRedirects = true,
-            verify = false
         )
     }
 
