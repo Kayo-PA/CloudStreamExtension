@@ -139,7 +139,8 @@ class Stash : MainAPI() {
 
 
     override suspend fun load(url: String): LoadResponse {
-        val bodyJson = findSceneById(url.toInt())
+        val id = url.substringAfterLast("/")
+        val bodyJson = findSceneById(id.toInt())
         val initResponse = stashGraphQL(bodyJson)
         val parsed = gson.fromJson(initResponse, FindSceneResponse::class.java)
         val sceneFull = parsed.data?.findScene
