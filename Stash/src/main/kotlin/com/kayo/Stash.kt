@@ -29,7 +29,6 @@ import com.lagradost.cloudstream3.SearchQuality
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import okio.Buffer
 
 
 class Stash : MainAPI() {
@@ -80,7 +79,7 @@ class Stash : MainAPI() {
                 scene.id.toString(),
                 TvType.NSFW
             ) {
-                posterUrl = scene.paths?.screenshot
+                posterUrl = scene.paths?.screenshot+"&apikey="+apiKey
                 quality = quality1
             }
         }
@@ -118,7 +117,7 @@ class Stash : MainAPI() {
                 scene.id ?: "",
                 TvType.NSFW
             ) {
-                this.posterUrl = scene.paths?.screenshot
+                this.posterUrl = scene.paths?.screenshot+"&apikey="+apiKey
                 this.quality = quality1
             }
         }
@@ -193,11 +192,6 @@ class Stash : MainAPI() {
     }
 
     fun stashGraphQL(bodyJson: String): String {
-        val jsonMediaType = "application/json; charset=utf-8".toMediaType()
-        val buffer = Buffer()
-        val requestii = bodyJson.toRequestBody(jsonMediaType)
-        requestii.writeTo(buffer)
-        Log.d("jsonMediaType", buffer.readUtf8())
         val req = Request.Builder()
             .url("$mainUrl/graphql")
             .addHeader("ApiKey", apiKey)
