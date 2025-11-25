@@ -166,7 +166,7 @@ class Stash : MainAPI() {
 //            this.backgroundPosterUrl =  sceneFull?.paths?.screenshot+"&apikey="+apiKey
             if(preview != null){
                 this.trailers =
-                    listOf(TrailerData((sceneFull.paths.preview + "&apikey=" + apiKey), "", true)) as MutableList<TrailerData>
+                    listOf(TrailerData((sceneFull.paths.preview + "?apikey=" + apiKey), "", true)) as MutableList<TrailerData>
             }
             }
 
