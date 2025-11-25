@@ -1,6 +1,5 @@
 package com.kayo
 
-import android.util.Log
 import com.lagradost.cloudstream3.HomePageList
 import com.lagradost.cloudstream3.HomePageResponse
 import com.lagradost.cloudstream3.MainAPI
@@ -9,23 +8,18 @@ import com.lagradost.cloudstream3.TvType
 import com.lagradost.cloudstream3.VPNStatus
 import com.lagradost.cloudstream3.mainPageOf
 import com.lagradost.cloudstream3.newHomePageResponse
-import com.lagradost.cloudstream3.utils.AppUtils
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
-import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.newExtractorLink
 import com.lagradost.cloudstream3.LoadResponse
 import com.lagradost.cloudstream3.SearchResponseList
 import com.lagradost.cloudstream3.SubtitleFile
-import com.lagradost.cloudstream3.app
-import com.lagradost.cloudstream3.fixUrlNull
 import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.newSearchResponseList
 import com.google.gson.Gson
 import com.kayo.helper.FindSceneResponse
 import com.kayo.helper.FindScenesResponse
-import com.kayo.helper.SceneItem
 import com.kayo.helper.findSceneById
 import com.kayo.helper.getAllScenes
 import com.lagradost.cloudstream3.Actor
@@ -33,12 +27,10 @@ import com.lagradost.cloudstream3.ActorData
 import com.lagradost.cloudstream3.SearchQuality
 import com.lagradost.cloudstream3.TrailerData
 import com.lagradost.cloudstream3.newSubtitleFile
-import kotlinx.coroutines.joinAll
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import kotlin.collections.emptyList
-import kotlin.time.DurationUnit
 
 
 class Stash : MainAPI() {
@@ -167,7 +159,7 @@ class Stash : MainAPI() {
 //            this.backgroundPosterUrl =  sceneFull?.paths?.screenshot+"&apikey="+apiKey
             if(preview != null){
                 this.trailers =
-                    listOf(TrailerData((sceneFull.paths.preview + "?apikey=" + apiKey), "", true)) as MutableList<TrailerData>
+                    listOf(TrailerData((sceneFull.paths.preview + "?apikey=" + apiKey), "", false)) as MutableList<TrailerData>
             }
             }
 
