@@ -51,6 +51,7 @@ class Stash : MainAPI() {
 
         val jsonBody = getAllScenes(page)
         val response = stashGraphQL(jsonBody)
+        Log.d("response123",response)
 
         val parsed = gson.fromJson(response, FindScenesResponse::class.java)
         val scenes = parsed.data?.findScenes?.scenes ?: emptyList()
