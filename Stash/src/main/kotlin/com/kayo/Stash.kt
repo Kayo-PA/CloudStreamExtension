@@ -26,10 +26,11 @@ import com.google.gson.Gson
 import com.kayo.helper.FindScenesResponse
 import com.kayo.helper.getAllScenes
 import com.lagradost.cloudstream3.SearchQuality
-import com.lagradost.nicehttp.NiceResponse
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okio.Buffer
+
 
 class Stash : MainAPI() {
 
@@ -42,6 +43,8 @@ class Stash : MainAPI() {
     private val apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJrYXlvIiwic3ViIjoiQVBJS2V5IiwiaWF0IjoxNzY0MDcwNjcwfQ.LkVoGtPjLOLiPNcR44WVwI7V8k105VNIWikxFWilRPg"
 
     private val gson = Gson()
+    val okHttp = okhttp3.OkHttpClient()
+
 
     override val mainPage = mainPageOf(
         "latest" to "Latest",
@@ -54,7 +57,7 @@ class Stash : MainAPI() {
     ): HomePageResponse {
 
         val jsonBody = getAllScenes(page)
-        val response = stashGraphQL(jsonBody).text
+        val response = stashGraphQL(jsonBody)
         val parsed = gson.fromJson(response, FindScenesResponse::class.java)
         val scenes = parsed.data?.findScenes?.scenes ?: emptyList()
         val totalCount = parsed.data?.findScenes?.count ?: 0
@@ -90,10 +93,8 @@ class Stash : MainAPI() {
     override suspend fun search(query: String, page: Int): SearchResponseList? {
         val bodyJson = getAllScenes(page, query)
         val initResponse = stashGraphQL(bodyJson)
-        Log.d("response123Header",initResponse.headers.toString())
-        Log.d("response123Body",initResponse.body.string())
-        val response = initResponse.text
-        val parsed = gson.fromJson(response, FindScenesResponse::class.java)
+        Log.d("response123Header",initResponse)
+        val parsed = gson.fromJson(initResponse, FindScenesResponse::class.java)
         val result = parsed.data?.findScenes ?: return null
 
         val scenes = result.scenes ?: emptyList()
@@ -191,22 +192,21 @@ class Stash : MainAPI() {
         return true
     }
 
-    suspend fun stashGraphQL(bodyJson: String): NiceResponse {
+    fun stashGraphQL(bodyJson: String): String {
         val jsonMediaType = "application/json; charset=utf-8".toMediaType()
         val buffer = Buffer()
         val requestii = bodyJson.toRequestBody(jsonMediaType)
         requestii.writeTo(buffer)
         Log.d("jsonMediaType", buffer.readUtf8())
-        return app.post(
-            url = "$mainUrl/graphql",
-            headers = mapOf(
-                "Content-Type" to "application/json",
-                "Accept" to "application/json",
-                "ApiKey" to apiKey
-            ),
-            requestBody = bodyJson.toRequestBody(jsonMediaType),
-            cacheTime = 0
-        )
+        val req = Request.Builder()
+            .url("$mainUrl/graphql")
+            .addHeader("ApiKey", apiKey)
+            .addHeader("Content-Type", "application/json")
+            .post(bodyJson.toRequestBody("application/json".toMediaType()))
+            .build()
+
+        val resp = okHttp.newCall(req).execute().body.string()
+        return resp
     }
 
 }
