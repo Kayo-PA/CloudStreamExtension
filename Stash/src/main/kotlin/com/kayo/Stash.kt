@@ -25,6 +25,7 @@ import com.kayo.helper.findSceneById
 import com.kayo.helper.getAllScenes
 import com.lagradost.cloudstream3.Actor
 import com.lagradost.cloudstream3.ActorData
+import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 import com.lagradost.cloudstream3.SearchQuality
 import com.lagradost.cloudstream3.TrailerData
 import com.lagradost.cloudstream3.newSubtitleFile
@@ -159,15 +160,7 @@ class Stash : MainAPI() {
             this.year = sceneFull?.date?.substring(0, 4)?.toInt()
 //            this.backgroundPosterUrl =  sceneFull?.paths?.screenshot+"&apikey="+apiKey
             if (preview != null) {
-                this.trailers =
-                    listOf(
-                        TrailerData(
-                            extractorUrl = (sceneFull.paths.preview + "?apikey=" + apiKey+"&ext=.mp4"),
-                            referer="",
-                            raw = true,
-                            headers = mapOf("ApiKey" to apiKey)
-                        )
-                    ) as MutableList<TrailerData>
+            addTrailer(sceneFull.paths.preview + "?apikey=" + apiKey+"&ext=.mp4")
             }
         }
 
