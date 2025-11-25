@@ -42,7 +42,8 @@ class Stash : MainAPI() {
     override val hasDownloadSupport = true
     override val vpnStatus = VPNStatus.MightBeNeeded
     override val supportedTypes = setOf(TvType.NSFW)
-    private val apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJrYXlvIiwic3ViIjoiQVBJS2V5IiwiaWF0IjoxNzY0MDcwNjcwfQ.LkVoGtPjLOLiPNcR44WVwI7V8k105VNIWikxFWilRPg"
+    private val apiKey =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJrYXlvIiwic3ViIjoiQVBJS2V5IiwiaWF0IjoxNzY0MDcwNjcwfQ.LkVoGtPjLOLiPNcR44WVwI7V8k105VNIWikxFWilRPg"
 
     private val gson = Gson()
     val okHttp = okhttp3.OkHttpClient()
@@ -71,10 +72,10 @@ class Stash : MainAPI() {
                 in 2160..5000 -> SearchQuality.FourK
                 in 1440..2159 -> SearchQuality.HQ
                 in 1080..1439 -> SearchQuality.HD
-                in 720..1079  -> SearchQuality.WebRip
-                in 480..719   -> SearchQuality.DVD
-                in 360..479   -> SearchQuality.SD
-                else          -> SearchQuality.SD
+                in 720..1079 -> SearchQuality.WebRip
+                in 480..719 -> SearchQuality.DVD
+                in 360..479 -> SearchQuality.SD
+                else -> SearchQuality.SD
             }
 
             newMovieSearchResponse(
@@ -82,7 +83,7 @@ class Stash : MainAPI() {
                 scene.id.toString(),
                 TvType.NSFW
             ) {
-                posterUrl = scene.paths?.screenshot+"&apikey="+apiKey
+                posterUrl = scene.paths?.screenshot + "&apikey=" + apiKey
                 quality = quality1
             }
         }
@@ -92,6 +93,7 @@ class Stash : MainAPI() {
             hasNext = hasNext
         )
     }
+
     override suspend fun search(query: String, page: Int): SearchResponseList? {
         val bodyJson = getAllScenes(page, query)
         val initResponse = stashGraphQL(bodyJson)
@@ -108,10 +110,10 @@ class Stash : MainAPI() {
                 in 2160..5000 -> SearchQuality.FourK
                 in 1440..2159 -> SearchQuality.HQ
                 in 1080..1439 -> SearchQuality.HD
-                in 720..1079  -> SearchQuality.WebRip
-                in 480..719   -> SearchQuality.DVD
-                in 360..479   -> SearchQuality.SD
-                else          -> SearchQuality.SD
+                in 720..1079 -> SearchQuality.WebRip
+                in 480..719 -> SearchQuality.DVD
+                in 360..479 -> SearchQuality.SD
+                else -> SearchQuality.SD
             }
 
             newMovieSearchResponse(
@@ -119,7 +121,7 @@ class Stash : MainAPI() {
                 scene.id ?: "",
                 TvType.NSFW
             ) {
-                this.posterUrl = scene.paths?.screenshot+"&apikey="+apiKey
+                this.posterUrl = scene.paths?.screenshot + "&apikey=" + apiKey
                 this.quality = quality1
             }
         }
@@ -128,8 +130,6 @@ class Stash : MainAPI() {
 
         return newSearchResponseList(items, hasNext)
     }
-
-
 
 
     override suspend fun load(url: String): LoadResponse {
@@ -150,21 +150,28 @@ class Stash : MainAPI() {
             } ?: emptyList()
 
 
-        return newMovieLoadResponse(sceneFull?.title ?: "" , url, TvType.NSFW, url) {
-            this.posterUrl = sceneFull?.paths?.screenshot+"&apikey="+apiKey
+        return newMovieLoadResponse(sceneFull?.title ?: "", url, TvType.NSFW, url) {
+            this.posterUrl = sceneFull?.paths?.screenshot + "&apikey=" + apiKey
             this.plot = sceneFull?.details
             this.tags = sceneFull?.tags?.map { it.name.toString() }
             this.actors = actors
             this.duration = ((sceneFull?.files?.firstOrNull()?.duration ?: 0.0) / 60).toInt()
             this.year = sceneFull?.date?.substring(0, 4)?.toInt()
 //            this.backgroundPosterUrl =  sceneFull?.paths?.screenshot+"&apikey="+apiKey
-            if(preview != null){
+            if (preview != null) {
                 this.trailers =
-                    listOf(TrailerData((sceneFull.paths.preview + "?apikey=" + apiKey), "", false)) as MutableList<TrailerData>
+                    listOf(
+                        TrailerData(
+                            extractorUrl = (sceneFull.paths.preview + "?apikey=" + apiKey),
+                            referer="",
+                            raw = true,
+                            headers = mapOf("ApiKey" to apiKey)
+                        )
+                    ) as MutableList<TrailerData>
             }
-            }
-
         }
+
+    }
 
 
     override suspend fun loadLinks(
@@ -176,13 +183,13 @@ class Stash : MainAPI() {
 
         val id = data.substringAfterLast("/")
         Log.d("loadLinks", "id: $id")
-        Log.d("loadLinks",data)
+        Log.d("loadLinks", data)
         val bodyJson = findSceneById(id.toInt())
         val initResponse = stashGraphQL(bodyJson)
         val parsed = gson.fromJson(initResponse, FindSceneResponse::class.java)
         val sceneFull = parsed.data?.findScene ?: return false
 
-        val captionUrl = sceneFull.paths?.caption+"?lang=en&type=vtt"
+        val captionUrl = sceneFull.paths?.caption + "?lang=en&type=vtt"
         if (captionUrl.isNotBlank()) {
             subtitleCallback.invoke(
                 newSubtitleFile(
