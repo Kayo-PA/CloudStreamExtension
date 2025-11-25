@@ -26,7 +26,6 @@ import com.google.gson.Gson
 import com.kayo.helper.FindScenesResponse
 import com.kayo.helper.getAllScenes
 import com.lagradost.cloudstream3.SearchQuality
-import com.lagradost.cloudstream3.utils.AppUtils.toJson
 import com.lagradost.nicehttp.NiceResponse
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -205,9 +204,8 @@ class Stash : MainAPI() {
                 "Accept" to "application/json",
                 "ApiKey" to apiKey
             ),
-            json = bodyJson.toRequestBody(jsonMediaType),
-            cacheTime = 0,                 // << disable cache
-            allowRedirects = true,
+            requestBody = bodyJson.toRequestBody(jsonMediaType),
+            cacheTime = 0
         )
     }
 
