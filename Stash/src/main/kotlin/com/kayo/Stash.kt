@@ -196,9 +196,13 @@ class Stash : MainAPI() {
             url = "$mainUrl/graphql",
             headers = mapOf(
                 "Content-Type" to "application/json",
+                "Accept" to "application/json",
                 "ApiKey" to apiKey
             ),
-            json = bodyJson
+            json = bodyJson,
+            cacheTime = 0,                 // << disable cache
+            allowRedirects = true,
+            verify = false
         )
     }
 
