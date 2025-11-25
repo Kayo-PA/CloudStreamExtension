@@ -1,5 +1,6 @@
 package com.kayo
 
+import android.util.Log
 import com.lagradost.cloudstream3.HomePageList
 import com.lagradost.cloudstream3.HomePageResponse
 import com.lagradost.cloudstream3.MainAPI
@@ -172,7 +173,10 @@ class Stash : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
+
         val id = data.substringAfterLast("/")
+        Log.d("loadLinks", "id: $id")
+        Log.d("loadLinks",data)
         val bodyJson = findSceneById(id.toInt())
         val initResponse = stashGraphQL(bodyJson)
         val parsed = gson.fromJson(initResponse, FindSceneResponse::class.java)
