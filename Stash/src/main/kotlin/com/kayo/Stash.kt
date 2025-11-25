@@ -160,7 +160,7 @@ class Stash : MainAPI() {
             this.year = sceneFull?.date?.substring(0, 4)?.toInt()
 //            this.backgroundPosterUrl =  sceneFull?.paths?.screenshot+"&apikey="+apiKey
             if (preview != null) {
-            addTrailer(sceneFull.paths.preview + "?apikey=" + apiKey+"&ext=.mp4")
+            addTrailer(sceneFull.paths.preview + "?apikey=" + apiKey)
             }
         }
 
