@@ -26,6 +26,8 @@ import com.google.gson.Gson
 import com.kayo.helper.FindScenesResponse
 import com.kayo.helper.getAllScenes
 import com.lagradost.cloudstream3.SearchQuality
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 
 class Stash : MainAPI() {
 
@@ -186,7 +188,7 @@ class Stash : MainAPI() {
     }
 
     suspend fun stashGraphQL(bodyJson: String): String {
-
+        val jsonMediaType = "application/json; charset=utf-8".toMediaType()
 
         return app.post(
             url = "$mainUrl/graphql",
@@ -194,7 +196,7 @@ class Stash : MainAPI() {
                 "Content-Type" to "application/json",
                 "ApiKey" to apiKey
             ),
-            json = bodyJson
+            requestBody = bodyJson.toRequestBody(jsonMediaType)
         ).text
     }
 
