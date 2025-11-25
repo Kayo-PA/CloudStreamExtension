@@ -28,6 +28,7 @@ import com.kayo.helper.getAllScenes
 import com.lagradost.cloudstream3.SearchQuality
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
+import okio.Buffer
 
 class Stash : MainAPI() {
 
@@ -188,17 +189,11 @@ class Stash : MainAPI() {
     }
 
     suspend fun stashGraphQL(bodyJson: String): String {
+        val buffer = Buffer()
         val jsonMediaType = "application/json; charset=utf-8".toMediaType()
-        Log.d("stashGraphQLJson", bodyJson.toRequestBody(jsonMediaType).toString())
+        val request = bodyJson.toRequestBody(jsonMediaType).writeTo(buffer)
+        Log.d("stashGraphQLJson", buffer.readUtf8())
         Log.d("stashGraphQL", "stashGraphQL: $bodyJson")
-        Log.d("stashGraphQlRequest",app.post(
-            url = "$mainUrl/graphql",
-            headers = mapOf(
-                "Content-Type" to "application/json",
-                "ApiKey" to apiKey
-            ),
-            json = bodyJson.toRequestBody(jsonMediaType)
-        ).body.toString())
 
         return app.post(
             url = "$mainUrl/graphql",
