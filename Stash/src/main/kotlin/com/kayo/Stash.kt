@@ -194,7 +194,7 @@ class Stash : MainAPI() {
                 "Content-Type" to "application/json",
                 "ApiKey" to apiKey
             ),
-            data = dataMap
+            json = dataMap
         ).text
     }
 
