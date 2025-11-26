@@ -199,7 +199,6 @@ class Stash : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        Log.d("loadlink123","is running")
         val id = data.substringAfterLast("/")
         var initResponse: String
         if (id == "792") {
@@ -241,7 +240,6 @@ class Stash : MainAPI() {
         }
 
         val externalUrls = sceneFull.urls ?: emptyList()
-        Log.d("external links",externalUrls.toString())
 
         for (ext in externalUrls) {
             if (ext.isBlank()) continue

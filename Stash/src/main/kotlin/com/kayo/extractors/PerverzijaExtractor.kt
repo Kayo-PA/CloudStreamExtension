@@ -1,0 +1,89 @@
+package com.kayo.extractors
+
+import com.lagradost.cloudstream3.SubtitleFile
+import com.lagradost.cloudstream3.USER_AGENT
+import com.lagradost.cloudstream3.app
+import com.lagradost.cloudstream3.utils.ExtractorApi
+import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
+import com.lagradost.cloudstream3.utils.newExtractorLink
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import org.jsoup.Jsoup
+
+class PerverzijaExtractor(
+    override val name: String = "Perverzija",
+    override val mainUrl: String = "https://tube.perverzija.com",
+    override val requiresReferer: Boolean = false
+) : ExtractorApi() {
+    private  val headers = mapOf(
+        "User-Agent" to "Mozilla/5.0 (Android 13; Mobile; rv:139.0) Gecko/139.0 Firefox/139.0"
+    )
+
+    override suspend fun getUrl(
+        url: String,
+        referer: String?,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ) {
+        val response = app.get(url, headers = headers)
+        val document = response.document
+
+        val iframeUrl = document.select("div#player-embed iframe").attr("src")
+
+        Xtremestream().getUrl(iframeUrl, url, subtitleCallback, callback)
+    }
+}
+
+open class Xtremestream : ExtractorApi() {
+    override var name = "Xtremestream"
+    override var mainUrl = "https://pervl4.xtremestream.xyz"
+    override val requiresReferer = true
+    private val client = OkHttpClient()
+
+    override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit){
+
+        val request = Request.Builder()
+            .url(url)
+            .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8")
+            .header("Referer", referer.toString())
+            .header("User-Agent", USER_AGENT)
+            .build()
+
+        val response = client.newCall(request).execute()
+        val html = response.body.string()
+
+        val playerScript =
+            Jsoup.parse(html).selectXpath("//script[contains(text(),'var video_id')]")
+                .html()
+        if (playerScript.isNotBlank()) {
+            val videoId = playerScript.substringAfter("var video_id = `").substringBefore("`;")
+            val m3u8LoaderUrl =
+                playerScript.substringAfter("var m3u8_loader_url = `").substringBefore("`;")
+
+            if (videoId.isNotBlank() && m3u8LoaderUrl.isNotBlank()) {
+
+                val resolutions = listOf(2160,1080, 720, 480)
+
+                resolutions.forEach { resolution ->
+                    callback.invoke(
+                        newExtractorLink(
+                            name,
+                            name,
+                            "${m3u8LoaderUrl}/${videoId}&q=${resolution}",
+                            type = ExtractorLinkType.M3U8
+                        ) {
+                            this.quality = resolution
+                            this.referer = url
+                            this.headers = mapOf(
+                                "Accept" to "*/*",
+                                "Referer" to url,
+                                "User-Agent" to USER_AGENT
+                            )
+                        }
+                    )
+                }
+            }
+        }
+    }
+}

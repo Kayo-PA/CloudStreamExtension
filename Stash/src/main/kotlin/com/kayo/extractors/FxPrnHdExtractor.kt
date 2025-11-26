@@ -9,7 +9,7 @@ import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.cloudstream3.utils.newExtractorLink
 
-class FxPrnHdExtractors(
+class FxPrnHdExtractor(
     override val name: String = "Fxpornhd",
     override val mainUrl: String = "https://fxpornhd.com",
     override val requiresReferer: Boolean = false
@@ -21,11 +21,7 @@ class FxPrnHdExtractors(
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ) {
-        Log.d("FxExtractor","invoked")
-
         val doc = app.get(url).document
-
-        // STEP 1: find iframe holding player
         val iframe = doc.select("div.responsive-player iframe").attr("src")
 
         if (iframe.isBlank()) return
