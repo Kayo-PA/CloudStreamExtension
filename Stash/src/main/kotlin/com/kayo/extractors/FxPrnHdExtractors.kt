@@ -1,5 +1,6 @@
 package com.kayo.extractors
 
+import android.util.Log
 import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.utils.ExtractorApi
@@ -20,6 +21,7 @@ class FxPrnHdExtractors(
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ) {
+        Log.d("FxExtractor","invoked")
 
         val doc = app.get(url).document
 

@@ -11,7 +11,7 @@ fun that792 ():String{
             "urls": [
                 "https://theporndb.net/scenes/brazzersexxtra-wanderlusting-the-best-of-vacation-fucks",
                 "https://www.brazzers.com/video/11410971/wanderlusting-the-best-of-vacation-fucks",
-                "https://fxpornhd.com/myfirst-doxy-my-first-horny-goth-doxys-first-ever-anal/"
+                "https://fxpornhd.com/assparade-brandy-salazar-booty-inspection/"
             ],
             "date": "2025-10-17",
             "rating100": null,
