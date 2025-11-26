@@ -261,7 +261,6 @@ class StashPlugin : Plugin() {
         registerExtractorAPI(VidHidePro5())
         registerExtractorAPI(VidHidePro6())
         registerExtractorAPI(VidMoxy())
-        registerExtractorAPI(VidSrcExtractor())
         registerExtractorAPI(VidSrcExtractor2())
         registerExtractorAPI(VidSrcTo())
         registerExtractorAPI(VidStack())
