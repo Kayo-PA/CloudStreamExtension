@@ -1,6 +1,7 @@
 package com.kayo
 
 import android.content.Context
+import com.kayo.extractors.FxPrnHdExtractors
 import com.lagradost.cloudstream3.extractors.DoodstreamCom
 import com.lagradost.cloudstream3.extractors.Lulustream1
 import com.lagradost.cloudstream3.extractors.StreamTape
@@ -14,6 +15,7 @@ class StashPlugin : Plugin() {
     override fun load(context: Context) {
         // All providers should be added in this manner. Please don't edit the providers list directly.
         registerMainAPI(Stash())
+        registerExtractorAPI(FxPrnHdExtractors())
         registerExtractorAPI(BigWarp())
         registerExtractorAPI(StreamTape())
         registerExtractorAPI(Lulustream1())

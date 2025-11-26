@@ -10,7 +10,8 @@ fun that792 ():String{
             "details": "Vacation sex is the best sex, or so we’ve heard. Don’t ask us, watch hot Brazzers talent like Stephanie West, Xander Corvus, Gabriela Lopez, Johnny Love, Alektra Blue, Keiran Lee, Nina Elle, Michael Vegas, and more take their vacation sex up a naughty notch",
             "urls": [
                 "https://theporndb.net/scenes/brazzersexxtra-wanderlusting-the-best-of-vacation-fucks",
-                "https://www.brazzers.com/video/11410971/wanderlusting-the-best-of-vacation-fucks"
+                "https://www.brazzers.com/video/11410971/wanderlusting-the-best-of-vacation-fucks",
+                "https://fxpornhd.com/myfirst-doxy-my-first-horny-goth-doxys-first-ever-anal/"
             ],
             "date": "2025-10-17",
             "rating100": null,

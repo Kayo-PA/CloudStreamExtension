@@ -1,6 +1,5 @@
 package com.kayo
 
-import android.util.Log
 import com.lagradost.cloudstream3.HomePageList
 import com.lagradost.cloudstream3.HomePageResponse
 import com.lagradost.cloudstream3.MainAPI
@@ -30,12 +29,12 @@ import com.lagradost.cloudstream3.Actor
 import com.lagradost.cloudstream3.ActorData
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 import com.lagradost.cloudstream3.SearchQuality
-import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.newSubtitleFile
+import com.lagradost.cloudstream3.utils.loadExtractor
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import java.io.File
 import kotlin.collections.emptyList
 
 
@@ -51,7 +50,7 @@ class Stash : MainAPI() {
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJrYXlvIiwic3ViIjoiQVBJS2V5IiwiaWF0IjoxNzY0MDcwNjcwfQ.LkVoGtPjLOLiPNcR44WVwI7V8k105VNIWikxFWilRPg"
 
     private val gson = Gson()
-    val okHttp = okhttp3.OkHttpClient()
+    val okHttp = OkHttpClient()
 
 
     override val mainPage = mainPageOf(
@@ -100,7 +99,7 @@ class Stash : MainAPI() {
     }
 
     override suspend fun search(query: String, page: Int): SearchResponseList? {
-        var initResponse = ""
+        var initResponse: String
         if (query == "Dummy") {
             initResponse = allList()
         } else {
@@ -146,7 +145,7 @@ class Stash : MainAPI() {
 
     override suspend fun load(url: String): LoadResponse {
         val id = url.substringAfterLast("/")
-        var initResponse = ""
+        var initResponse: String
         if (id == "792") {
             initResponse = that792()
         } else if ((id == "793")) {
@@ -230,6 +229,21 @@ class Stash : MainAPI() {
                 )
             )
         }
+
+        val externalUrls = sceneFull.urls ?: emptyList()
+
+        for (ext in externalUrls) {
+            if (ext.isBlank()) continue
+
+            // CloudStream extractor handler
+            loadExtractor(
+                ext,
+                referer = mainUrl,
+                subtitleCallback = subtitleCallback,
+                callback = callback
+            )
+        }
+
         return true
     }
 
