@@ -19,6 +19,9 @@ import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.newSearchResponseList
 import com.google.gson.Gson
+import com.kayo.dummy.allList
+import com.kayo.dummy.that792
+import com.kayo.dummy.that793
 import com.kayo.helper.FindSceneResponse
 import com.kayo.helper.FindScenesResponse
 import com.kayo.helper.findSceneById
@@ -27,11 +30,12 @@ import com.lagradost.cloudstream3.Actor
 import com.lagradost.cloudstream3.ActorData
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 import com.lagradost.cloudstream3.SearchQuality
-import com.lagradost.cloudstream3.TrailerData
+import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.newSubtitleFile
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.File
 import kotlin.collections.emptyList
 
 
@@ -96,8 +100,15 @@ class Stash : MainAPI() {
     }
 
     override suspend fun search(query: String, page: Int): SearchResponseList? {
-        val bodyJson = getAllScenes(page, query)
-        val initResponse = stashGraphQL(bodyJson)
+        var initResponse = ""
+        if (query == "Dummy") {
+            initResponse = allList()
+        } else {
+            val jsonBody = getAllScenes(page, query)
+            initResponse = stashGraphQL(jsonBody)
+        }
+//        val bodyJson = getAllScenes(page, query)
+//        val initResponse = stashGraphQL(bodyJson)
         val parsed = gson.fromJson(initResponse, FindScenesResponse::class.java)
         val result = parsed.data?.findScenes ?: return null
 
@@ -135,8 +146,17 @@ class Stash : MainAPI() {
 
     override suspend fun load(url: String): LoadResponse {
         val id = url.substringAfterLast("/")
-        val bodyJson = findSceneById(id.toInt())
-        val initResponse = stashGraphQL(bodyJson)
+        var initResponse = ""
+        if (id == "792") {
+            initResponse = that792()
+        } else if ((id == "793")) {
+            initResponse = that793()
+        } else {
+            val jsonBody = findSceneById(id.toInt())
+            initResponse = stashGraphQL(jsonBody)
+        }
+//        val bodyJson = findSceneById(id.toInt())
+//        val initResponse = stashGraphQL(bodyJson)
         val parsed = gson.fromJson(initResponse, FindSceneResponse::class.java)
         val sceneFull = parsed.data?.findScene
         val preview = sceneFull?.paths?.preview?.takeIf { it.isNotBlank() }
@@ -149,8 +169,6 @@ class Stash : MainAPI() {
                     )
                 )
             } ?: emptyList()
-
-
         return newMovieLoadResponse(sceneFull?.title ?: "", url, TvType.NSFW, url) {
             this.posterUrl = sceneFull?.paths?.screenshot + "&apikey=" + apiKey
             this.plot = sceneFull?.details
@@ -159,6 +177,8 @@ class Stash : MainAPI() {
             this.duration = ((sceneFull?.files?.firstOrNull()?.duration ?: 0.0) / 60).toInt()
             this.year = sceneFull?.date?.substring(0, 4)?.toInt()
 //            this.backgroundPosterUrl =  sceneFull?.paths?.screenshot+"&apikey="+apiKey
+
+
             if (preview != null) {
                 addTrailer(
                     sceneFull.paths.preview + "?apikey=" + apiKey, addRaw = true, headers = mapOf(
@@ -185,7 +205,6 @@ class Stash : MainAPI() {
         val initResponse = stashGraphQL(bodyJson)
         val parsed = gson.fromJson(initResponse, FindSceneResponse::class.java)
         val sceneFull = parsed.data?.findScene ?: return false
-
         val captionUrl = sceneFull.paths?.caption + "?lang=en&type=vtt"
         if (captionUrl.isNotBlank()) {
             subtitleCallback.invoke(

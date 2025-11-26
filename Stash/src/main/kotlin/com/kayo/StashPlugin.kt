@@ -14,10 +14,10 @@ class StashPlugin : Plugin() {
     override fun load(context: Context) {
         // All providers should be added in this manner. Please don't edit the providers list directly.
         registerMainAPI(Stash())
-//        registerExtractorAPI(BigWarp())
-//        registerExtractorAPI(StreamTape())
-//        registerExtractorAPI(Lulustream1())
-//        registerExtractorAPI(Vidguardto())
-//        registerExtractorAPI(DoodstreamCom())
+        registerExtractorAPI(BigWarp())
+        registerExtractorAPI(StreamTape())
+        registerExtractorAPI(Lulustream1())
+        registerExtractorAPI(Vidguardto())
+        registerExtractorAPI(DoodstreamCom())
     }
 }
