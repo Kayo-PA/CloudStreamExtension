@@ -201,35 +201,44 @@ class Stash : MainAPI() {
     ): Boolean {
         Log.d("loadlink123","is running")
         val id = data.substringAfterLast("/")
-        val bodyJson = findSceneById(id.toInt())
-        val initResponse = stashGraphQL(bodyJson)
+        var initResponse: String
+        if (id == "792") {
+            initResponse = that792()
+        } else if ((id == "793")) {
+            initResponse = that793()
+        } else {
+            val jsonBody = findSceneById(id.toInt())
+            initResponse = stashGraphQL(jsonBody)
+        }
+//        val bodyJson = findSceneById(id.toInt())
+//        val initResponse = stashGraphQL(bodyJson)
         val parsed = gson.fromJson(initResponse, FindSceneResponse::class.java)
         val sceneFull = parsed.data?.findScene ?: return false
-//        val captionUrl = sceneFull.paths?.caption + "?lang=en&type=vtt"
-//        if (captionUrl.isNotBlank()) {
-//            subtitleCallback.invoke(
-//                newSubtitleFile(
-//                    "English",
-//                    captionUrl
-//                )
-//            )
-//        }
-//
-//        val streams = sceneFull.sceneStreams ?: emptyList()
-//
-//
-//
-//        for (stream in streams) {
-//            val streamUrl = stream.url ?: continue
-//            callback.invoke(
-//                newExtractorLink(
-//                    source = "Stash",
-//                    name = stream.label ?: "Stream",
-//                    url = streamUrl,
-//                    type = ExtractorLinkType.VIDEO
-//                )
-//            )
-//        }
+        val captionUrl = sceneFull.paths?.caption + "?lang=en&type=vtt"
+        if (captionUrl.isNotBlank()) {
+            subtitleCallback.invoke(
+                newSubtitleFile(
+                    "English",
+                    captionUrl
+                )
+            )
+        }
+
+        val streams = sceneFull.sceneStreams ?: emptyList()
+
+
+
+        for (stream in streams) {
+            val streamUrl = stream.url ?: continue
+            callback.invoke(
+                newExtractorLink(
+                    source = "Stash",
+                    name = stream.label ?: "Stream",
+                    url = streamUrl,
+                    type = ExtractorLinkType.VIDEO
+                )
+            )
+        }
 
         val externalUrls = sceneFull.urls ?: emptyList()
         Log.d("external links",externalUrls.toString())
