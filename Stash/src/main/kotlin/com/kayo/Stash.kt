@@ -199,7 +199,7 @@ class Stash : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-
+        Log.d("loadlink123","is running")
         val id = data.substringAfterLast("/")
         val bodyJson = findSceneById(id.toInt())
         val initResponse = stashGraphQL(bodyJson)
