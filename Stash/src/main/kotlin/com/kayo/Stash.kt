@@ -1,5 +1,6 @@
 package com.kayo
 
+import android.util.Log
 import com.lagradost.cloudstream3.HomePageList
 import com.lagradost.cloudstream3.HomePageResponse
 import com.lagradost.cloudstream3.MainAPI
@@ -204,33 +205,34 @@ class Stash : MainAPI() {
         val initResponse = stashGraphQL(bodyJson)
         val parsed = gson.fromJson(initResponse, FindSceneResponse::class.java)
         val sceneFull = parsed.data?.findScene ?: return false
-        val captionUrl = sceneFull.paths?.caption + "?lang=en&type=vtt"
-        if (captionUrl.isNotBlank()) {
-            subtitleCallback.invoke(
-                newSubtitleFile(
-                    "English",
-                    captionUrl
-                )
-            )
-        }
-
-        val streams = sceneFull.sceneStreams ?: emptyList()
-
-
-
-        for (stream in streams) {
-            val streamUrl = stream.url ?: continue
-            callback.invoke(
-                newExtractorLink(
-                    source = "Stash",
-                    name = stream.label ?: "Stream",
-                    url = streamUrl,
-                    type = ExtractorLinkType.VIDEO
-                )
-            )
-        }
+//        val captionUrl = sceneFull.paths?.caption + "?lang=en&type=vtt"
+//        if (captionUrl.isNotBlank()) {
+//            subtitleCallback.invoke(
+//                newSubtitleFile(
+//                    "English",
+//                    captionUrl
+//                )
+//            )
+//        }
+//
+//        val streams = sceneFull.sceneStreams ?: emptyList()
+//
+//
+//
+//        for (stream in streams) {
+//            val streamUrl = stream.url ?: continue
+//            callback.invoke(
+//                newExtractorLink(
+//                    source = "Stash",
+//                    name = stream.label ?: "Stream",
+//                    url = streamUrl,
+//                    type = ExtractorLinkType.VIDEO
+//                )
+//            )
+//        }
 
         val externalUrls = sceneFull.urls ?: emptyList()
+        Log.d("external links",externalUrls.toString())
 
         for (ext in externalUrls) {
             if (ext.isBlank()) continue

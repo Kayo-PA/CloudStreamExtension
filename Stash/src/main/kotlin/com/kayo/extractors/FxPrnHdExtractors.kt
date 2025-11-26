@@ -10,7 +10,7 @@ import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.cloudstream3.utils.newExtractorLink
 
 class FxPrnHdExtractors(
-    override val name: String = "FxPrnHd",
+    override val name: String = "Fxpornhd",
     override val mainUrl: String = "https://fxpornhd.com",
     override val requiresReferer: Boolean = false
 ) : ExtractorApi() {
