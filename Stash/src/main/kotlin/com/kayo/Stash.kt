@@ -49,7 +49,7 @@ class Stash : MainAPI() {
     override val supportedTypes = setOf(TvType.NSFW)
     private val apiKey =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJrYXlvIiwic3ViIjoiQVBJS2V5IiwiaWF0IjoxNzY0MDcwNjcwfQ.LkVoGtPjLOLiPNcR44WVwI7V8k105VNIWikxFWilRPg"
-
+    private val previewUrl ="http://192.168.1.6:3455/preview"
     private val gson = Gson()
     val okHttp = OkHttpClient()
 
@@ -159,6 +159,9 @@ class Stash : MainAPI() {
 //        val initResponse = stashGraphQL(bodyJson)
         val parsed = gson.fromJson(initResponse, FindSceneResponse::class.java)
         val sceneFull = parsed.data?.findScene
+        val oshash = sceneFull?.files?.firstOrNull()?.fingerprints?.firstOrNull { it.type == "oshash" }
+            ?.value
+
         val preview = sceneFull?.paths?.preview?.takeIf { it.isNotBlank() }
         val actors = sceneFull?.performers
             ?.map { performer ->
@@ -181,11 +184,7 @@ class Stash : MainAPI() {
 
             if (preview != null) {
                 addTrailer(
-                    sceneFull.paths.preview + "?apikey=" + apiKey, addRaw = true, headers = mapOf(
-                        "ApiKey" to apiKey,
-                        "User-Agent" to "Mozilla/5.0",
-                        "Accept" to "*/*"
-                    )
+                    "$previewUrl/${oshash}.mp4", addRaw = true,
                 )
             }
         }
@@ -225,8 +224,6 @@ class Stash : MainAPI() {
 
         val streams = sceneFull.sceneStreams ?: emptyList()
 
-
-
         for (stream in streams) {
             val streamUrl = stream.url ?: continue
             callback.invoke(
@@ -255,7 +252,6 @@ class Stash : MainAPI() {
 
         return true
     }
-
     fun stashGraphQL(bodyJson: String): String {
         val req = Request.Builder()
             .url("$mainUrl/graphql")
