@@ -184,7 +184,7 @@ class Stash : MainAPI() {
 
             if (preview != null) {
                 addTrailer(
-                    "$previewUrl/${oshash}.mp4", addRaw = true,
+                    "$previewUrl&apikey=$apiKey", addRaw = true,
                 )
             }
         }
