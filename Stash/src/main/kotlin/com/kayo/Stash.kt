@@ -162,7 +162,7 @@ class Stash : MainAPI() {
 
             if (preview != null) {
                 addTrailer(
-                    "$preview&apikey=$apiKey", addRaw = true,
+                    "$preview?apikey=$apiKey", addRaw = true,
                 )
             }
         }
