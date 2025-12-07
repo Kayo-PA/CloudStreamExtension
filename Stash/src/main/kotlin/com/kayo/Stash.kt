@@ -1,6 +1,5 @@
 package com.kayo
 
-import android.util.Log
 import com.lagradost.cloudstream3.HomePageList
 import com.lagradost.cloudstream3.HomePageResponse
 import com.lagradost.cloudstream3.MainAPI
@@ -19,9 +18,6 @@ import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.newSearchResponseList
 import com.google.gson.Gson
-import com.kayo.dummy.allList
-import com.kayo.dummy.that792
-import com.kayo.dummy.that793
 import com.kayo.helper.FindSceneResponse
 import com.kayo.helper.FindScenesResponse
 import com.kayo.helper.findSceneById
@@ -49,7 +45,6 @@ class Stash : MainAPI() {
     override val supportedTypes = setOf(TvType.NSFW)
     private val apiKey =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJrYXlvIiwic3ViIjoiQVBJS2V5IiwiaWF0IjoxNzY0MDcwNjcwfQ.LkVoGtPjLOLiPNcR44WVwI7V8k105VNIWikxFWilRPg"
-    private val previewUrl ="http://192.168.1.6:3455/preview"
     private val gson = Gson()
     val okHttp = OkHttpClient()
 
@@ -100,15 +95,9 @@ class Stash : MainAPI() {
     }
 
     override suspend fun search(query: String, page: Int): SearchResponseList? {
-        var initResponse: String
-        if (query == "Dummy") {
-            initResponse = allList()
-        } else {
-            val jsonBody = getAllScenes(page, query)
-            initResponse = stashGraphQL(jsonBody)
-        }
-//        val bodyJson = getAllScenes(page, query)
-//        val initResponse = stashGraphQL(bodyJson)
+
+        val bodyJson = getAllScenes(page, query)
+        val initResponse = stashGraphQL(bodyJson)
         val parsed = gson.fromJson(initResponse, FindScenesResponse::class.java)
         val result = parsed.data?.findScenes ?: return null
 
@@ -146,21 +135,10 @@ class Stash : MainAPI() {
 
     override suspend fun load(url: String): LoadResponse {
         val id = url.substringAfterLast("/")
-        var initResponse: String
-        if (id == "792") {
-            initResponse = that792()
-        } else if ((id == "793")) {
-            initResponse = that793()
-        } else {
-            val jsonBody = findSceneById(id.toInt())
-            initResponse = stashGraphQL(jsonBody)
-        }
-//        val bodyJson = findSceneById(id.toInt())
-//        val initResponse = stashGraphQL(bodyJson)
+        val bodyJson = findSceneById(id.toInt())
+        val initResponse = stashGraphQL(bodyJson)
         val parsed = gson.fromJson(initResponse, FindSceneResponse::class.java)
         val sceneFull = parsed.data?.findScene
-        val oshash = sceneFull?.files?.firstOrNull()?.fingerprints?.firstOrNull { it.type == "oshash" }
-            ?.value
 
         val preview = sceneFull?.paths?.preview?.takeIf { it.isNotBlank() }
         val actors = sceneFull?.performers
@@ -199,17 +177,9 @@ class Stash : MainAPI() {
         callback: (ExtractorLink) -> Unit
     ): Boolean {
         val id = data.substringAfterLast("/")
-        var initResponse: String
-        if (id == "792") {
-            initResponse = that792()
-        } else if ((id == "793")) {
-            initResponse = that793()
-        } else {
-            val jsonBody = findSceneById(id.toInt())
-            initResponse = stashGraphQL(jsonBody)
-        }
-//        val bodyJson = findSceneById(id.toInt())
-//        val initResponse = stashGraphQL(bodyJson)
+
+        val bodyJson = findSceneById(id.toInt())
+        val initResponse = stashGraphQL(bodyJson)
         val parsed = gson.fromJson(initResponse, FindSceneResponse::class.java)
         val sceneFull = parsed.data?.findScene ?: return false
         val captionUrl = sceneFull.paths?.caption + "?lang=en&type=vtt"
