@@ -3,6 +3,7 @@ package com.kayo
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.app
+import com.lagradost.cloudstream3.extractors.Streamup
 import com.lagradost.cloudstream3.utils.AppUtils.parseJson
 import com.lagradost.cloudstream3.utils.ExtractorApi
 import com.lagradost.cloudstream3.utils.ExtractorLink
@@ -22,6 +23,12 @@ class Vidnest : BigWarp(
 ) {
     override val name: String = "vidnest"
     override val mainUrl: String = "https://vidnest.io"
+}
+
+class Strmup : Streamup(
+) {
+    override val name: String = "strmup"
+    override val mainUrl: String = "https://strmup.cc"
 }
 
 open class BigWarp(
