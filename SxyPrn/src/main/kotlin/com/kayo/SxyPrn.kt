@@ -27,6 +27,7 @@ import com.lagradost.cloudstream3.fixUrlNull
 import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.newSearchResponseList
+import com.lagradost.cloudstream3.utils.loadExtractor
 
 class SxyPrn : MainAPI() {
     override var mainUrl = "https://www.sxyprn.com"
@@ -179,6 +180,8 @@ class SxyPrn : MainAPI() {
     ): Boolean {
         val document = app.get(data, interceptor = cfInterceptor).document
 
+        val otherLinks: List<String> = document.select("div.post_text h1 a.extlink_icon").eachAttr("href")
+
         val parsed = AppUtils.parseJson<Map<String, String>>(
             document.select("span.vidsnfo").attr("data-vnfo")
         )
@@ -204,6 +207,19 @@ class SxyPrn : MainAPI() {
                 this.quality = Qualities.Unknown.value
             }
         )
+
+        for (ext in otherLinks) {
+            if (ext.isBlank()) continue
+
+            // CloudStream extractor handler
+            loadExtractor(
+                ext,
+                referer = mainUrl,
+                subtitleCallback = subtitleCallback,
+                callback = callback
+            )
+        }
+
         return true
     }
 }

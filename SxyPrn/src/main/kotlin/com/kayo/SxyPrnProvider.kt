@@ -19,5 +19,7 @@ class SxyPrnProvider : Plugin() {
         registerExtractorAPI(Lulustream1())
         registerExtractorAPI(Vidguardto())
         registerExtractorAPI(DoodstreamCom())
+        registerExtractorAPI(Vidnest())
+        registerExtractorAPI(LuluStream())
     }
 }

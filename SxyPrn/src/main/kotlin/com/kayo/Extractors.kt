@@ -17,6 +17,13 @@ class LuluStream : BigWarp(
     override val mainUrl: String = "https://lulustream.com"
 }
 
+class Vidnest : BigWarp(
+    name = "vidnest"
+) {
+    override val name: String = "vidnest"
+    override val mainUrl: String = "https://vidnest.io"
+}
+
 open class BigWarp(
     override val name: String = "Big Warp",
     override val mainUrl: String = "https://bigwarp.io",
