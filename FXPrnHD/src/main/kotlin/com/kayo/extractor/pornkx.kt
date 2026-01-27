@@ -64,7 +64,7 @@ open class Pornkx(
                     this.name,
                     this.name,
                     sourceFile,
-                    ExtractorLinkType.VIDEO
+                    ExtractorLinkType.M3U8
                 ) {
                     this.referer = "$mainUrl/"
                 })

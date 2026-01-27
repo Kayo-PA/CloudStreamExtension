@@ -264,8 +264,7 @@ class Fxprnhd : MainAPI() {
                             newExtractorLink(
                                 name,
                                 "HLS",
-                                fixUrl(hlsUrl),
-                                ExtractorLinkType.M3U8
+                                fixUrl(hlsUrl)
                             ) {
                                 this.referer = iframeUrl
                             }
