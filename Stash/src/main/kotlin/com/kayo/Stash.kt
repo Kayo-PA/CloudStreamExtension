@@ -216,7 +216,6 @@ class Stash : MainAPI() {
 
         for (ext in externalUrls) {
             if (ext.isBlank()) continue
-
             // CloudStream extractor handler
             loadExtractor(
                 ext,
