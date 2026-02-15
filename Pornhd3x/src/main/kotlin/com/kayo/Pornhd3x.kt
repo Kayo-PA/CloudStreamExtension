@@ -2,6 +2,7 @@ package com.kayo
 
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
+import com.lagradost.cloudstream3.network.CloudflareKiller
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.*
 import okhttp3.OkHttpClient
@@ -17,6 +18,7 @@ class Pornhd3x : MainAPI() {
     override val hasDownloadSupport = true
     override val vpnStatus = VPNStatus.MightBeNeeded
     override val supportedTypes = setOf(TvType.NSFW)
+    private val cfInterceptor = CloudflareKiller()
 
     override val mainPage = mainPageOf(
         "latest" to "Latest Videos",
@@ -92,7 +94,7 @@ class Pornhd3x : MainAPI() {
                         "%20"
                     )
                 }" else "$mainUrl/search/${query.replace(" ", "%20")}/page-$i"
-            val document = app.get(searchUrl).document
+            val document = app.get(searchUrl, interceptor = cfInterceptor).document
             val results =
                 document.select("div.ml-item a")
                     .mapNotNull {
