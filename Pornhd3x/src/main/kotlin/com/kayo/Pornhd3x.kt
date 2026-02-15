@@ -70,14 +70,17 @@ class Pornhd3x : MainAPI() {
         val href = fixUrl(mainUrl + this.attr("href"))
         val imgTag = this.selectFirst("img")!!
         val originalUrl = imgTag.attr("data-original")
-
-        val posterUrl = when {
-            "trafficdeposit" in originalUrl -> "https:$originalUrl"
-            "https:" in originalUrl -> originalUrl
-            "http://pornhd3x.tv/Cms_Data/" in originalUrl -> originalUrl
-            else -> "https:" + originalUrl.replace("/Cms_Data", "//www9.pornhd3x.tv/cms_data")
+        var posterUrl: String
+        if ("pornhd4k" in href) {
+            posterUrl = originalUrl.replace("/Cms_Data", "https://pornhd4k.net/cms_data")
+        } else {
+            posterUrl = when {
+                "trafficdeposit" in originalUrl -> "https:$originalUrl"
+                "https:" in originalUrl -> originalUrl
+                "http://pornhd3x.tv/Cms_Data/" in originalUrl -> originalUrl
+                else -> "https:" + originalUrl.replace("/Cms_Data", "//www9.pornhd3x.tv/cms_data")
+            }
         }
-
         return newMovieSearchResponse(title, href, TvType.Movie) {
             this.posterUrl = posterUrl
         }
