@@ -79,24 +79,17 @@ class Pornhd4k : MainAPI() {
 
     }
 
-    override suspend fun search(query: String): List<SearchResponse> {
-        val searchResponse = mutableListOf<SearchResponse>()
-        for (i in 1..5) {
+    override suspend fun search(query: String, page: Int): SearchResponseList {
             val searchUrl =
-                if ("p=" in query) "$mainUrl/pornstar/${query.replace(" ","-").replace("p=","")}"
-                else if (query == "latest") "$mainUrl/premium-porn-hd/page-$i"
-                else if (" " in query) "$mainUrl/search/${query.replace(" ", "%20")}"
-                else "$mainUrl/search/${query.replace(" ", "%20")}/page-$i"
+                if ("p=" in query) "$mainUrl/pornstar/${query.replace(" ","-").replace("p=","")}/page-$page"
+                else if (query == "latest") "$mainUrl/premium-porn-hd/page-$page"
+                else if (" " in query) "$mainUrl/search/${query.replace(" ", "%20")}/page-$page"
+                else "$mainUrl/search/${query.replace(" ", "%20")}/page-$page"
             val document = app.get(searchUrl, interceptor = cfInterceptor).document
-            val results =
-                document.select("div.ml-item a")
-                    .mapNotNull {
-                        it.toSearchResult()
-                    }
-            searchResponse.addAll(results)
-            if (results.isEmpty()) break
-        }
-        return searchResponse
+            val lastPage = document.selectFirst("div#pagination ul.pagination li a[rel=last]")
+            val results = document.select("div.ml-item a").mapNotNull { it.toSearchResult() }
+            val hasNextPage = lastPage != null
+            return newSearchResponseList(list = results, hasNext = hasNextPage)
     }
 
     override suspend fun load(url: String): LoadResponse {

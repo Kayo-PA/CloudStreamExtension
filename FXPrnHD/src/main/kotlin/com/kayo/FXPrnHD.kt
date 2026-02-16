@@ -68,26 +68,15 @@ class Fxprnhd : MainAPI() {
 
     }
 
-    override suspend fun search(query: String, page: Int): SearchResponseList? {
+    override suspend fun search(query: String, page: Int): SearchResponseList {
         val searchParam = if (query == "latest") "" else query
         val document = app.get("$mainUrl/page/$page/?s=$searchParam").document
-        val results = document.select("div.videos-list > article")
-            .mapNotNull { it.toSearchResult() }
-
-        val lastPageUrl =
-            document.select("div.pagination ul li").last()?.selectFirst("a")?.attr("href")
-        val totalPages =
-            Regex("""page/(\d+)/""").find(lastPageUrl ?: "")?.groupValues?.get(1)?.toIntOrNull()
-                ?: 1
-
+        val results = document.select("div.videos-list > article").mapNotNull { it.toSearchResult() }
+        val lastPageUrl = document.select("div.pagination ul li").last()?.selectFirst("a")?.attr("href")
+        val totalPages = Regex("""page/(\d+)/""").find(lastPageUrl ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 1
         val hasNext = page < totalPages
-
-        return newSearchResponseList(
-            list = results,
-            hasNext = hasNext
-        )
+        return newSearchResponseList(list = results, hasNext = hasNext)
     }
-
 
     override suspend fun load(url: String): LoadResponse {
         var newurl: String
