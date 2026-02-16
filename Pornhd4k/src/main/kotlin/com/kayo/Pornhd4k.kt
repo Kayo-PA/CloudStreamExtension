@@ -67,13 +67,12 @@ class Pornhd4k : MainAPI() {
 
     private fun Element.toSearchResult(): SearchResponse {
         val title = this.attr("title")
-        val href = fixUrl(mainUrl + this.attr("href"))
         val imgTag = this.selectFirst("div.thumb__img img")!!
-        val originalUrl = imgTag.attr("data-preview")
-        var posterUrl = mainUrl+originalUrl
-        if (posterUrl.isEmpty()) {
-            posterUrl = imgTag.attr("data-original")
-        }
+        val trailer = imgTag.attr("data-preview")
+        val href = fixUrl(mainUrl + this.attr("href")) + "," + trailer
+
+        val posterUrl = imgTag.attr("data-original")
+
 
         return newMovieSearchResponse(title, href, TvType.Movie) {
             this.posterUrl = posterUrl
@@ -104,7 +103,16 @@ class Pornhd4k : MainAPI() {
     }
 
     override suspend fun load(url: String): LoadResponse {
-        val document = app.get(url).document
+        var newurl: String
+        var trailerUrl: String
+        if (url.contains(",")) {
+            newurl = url.substringBeforeLast(",")
+            trailerUrl = url.substringAfterLast(",")
+        } else {
+            newurl = url
+            trailerUrl = "https:null"
+        }
+        val document = app.get(newurl).document
         val info = document.selectFirst("div.mvi-content")!!
         val title = info.selectFirst("div.mvic-desc > h3")!!.text()
         val poster = document.selectFirst("meta[property=\"og:image\"]")?.attr("content")
@@ -124,6 +132,10 @@ class Pornhd4k : MainAPI() {
             this.tags = tags
             addActors(actors)
             this.recommendations = recommendations
+            if (trailerUrl != "https:null") {
+                this.trailers =
+                    listOf(TrailerData(trailerUrl, "", true)) as MutableList<TrailerData>
+            }
         }
     }
 
