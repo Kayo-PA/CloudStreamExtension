@@ -68,10 +68,10 @@ class Pornhd4k : MainAPI() {
     private fun Element.toSearchResult(): SearchResponse {
         val title = this.attr("title")
         val imgTag = this.selectFirst("div.thumb__img img")!!
-        val trailer = imgTag.attr("data-preview")
+        val trailer = this.selectFirst("div.thumb__img")!!.attr("data-preview")
         val href = fixUrl(mainUrl + this.attr("href")) + "," + trailer
 
-        val posterUrl = imgTag.attr("data-original")
+        val posterUrl = mainUrl+imgTag.attr("data-original")
 
 
         return newMovieSearchResponse(title, href, TvType.Movie) {
