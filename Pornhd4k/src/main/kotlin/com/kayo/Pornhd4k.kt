@@ -65,16 +65,14 @@ class Pornhd4k : MainAPI() {
         )
     }
 
-    private fun Element.toSearchResult(): SearchResponse? {
+    private fun Element.toSearchResult(): SearchResponse {
         val title = this.attr("title")
         val href = fixUrl(mainUrl + this.attr("href"))
-        val imgTag = this.selectFirst("img")!!
-        val originalUrl = imgTag.attr("data-original")
-        val posterUrl = when {
-            "trafficdeposit" in originalUrl -> "https:$originalUrl"
-            "https:" in originalUrl -> originalUrl
-            "http://pornhd3x.tv/Cms_Data/" in originalUrl -> originalUrl
-            else -> "https:" + originalUrl.replace("/Cms_Data", "//www9.pornhd3x.tv/cms_data")
+        val imgTag = this.selectFirst("div.thumb__img img")!!
+        val originalUrl = imgTag.attr("data-preview")
+        var posterUrl = mainUrl+originalUrl
+        if (posterUrl.isEmpty()) {
+            posterUrl = imgTag.attr("data-original")
         }
 
         return newMovieSearchResponse(title, href, TvType.Movie) {
@@ -110,8 +108,6 @@ class Pornhd4k : MainAPI() {
         val info = document.selectFirst("div.mvi-content")!!
         val title = info.selectFirst("div.mvic-desc > h3")!!.text()
         val poster = document.selectFirst("meta[property=\"og:image\"]")?.attr("content")
-            ?.replace("http://brazzers3x.com/xxxfree", "https://xxxfree")?.replace("http", "https")
-            ?.replace("brazzers3x.com", "pornhd3x.tv")
         val tags = document.select("div#mv-keywords a").map { it!!.text() }
         val description = info.selectFirst("div.desc")!!.text()
         val actors =
