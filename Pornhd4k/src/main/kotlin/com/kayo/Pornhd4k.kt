@@ -83,12 +83,10 @@ class Pornhd4k : MainAPI() {
         val searchResponse = mutableListOf<SearchResponse>()
         for (i in 1..5) {
             val searchUrl =
-                if (query == "latest") "$mainUrl/premium-porn-hd/page-$i" else if (" " in query) "$mainUrl/search/${
-                    query.replace(
-                        " ",
-                        "%20"
-                    )
-                }" else "$mainUrl/search/${query.replace(" ", "%20")}/page-$i"
+                if ("p=" in query) "$mainUrl/pornstar/${query.replace(" ","-").replace("p=","")}"
+                else if (query == "latest") "$mainUrl/premium-porn-hd/page-$i"
+                else if (" " in query) "$mainUrl/search/${query.replace(" ", "%20")}"
+                else "$mainUrl/search/${query.replace(" ", "%20")}/page-$i"
             val document = app.get(searchUrl, interceptor = cfInterceptor).document
             val results =
                 document.select("div.ml-item a")
