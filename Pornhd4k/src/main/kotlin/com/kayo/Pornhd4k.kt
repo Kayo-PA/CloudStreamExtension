@@ -69,14 +69,10 @@ class Pornhd4k : MainAPI() {
         val title = this.attr("title")
         val imgTag = this.selectFirst("div.thumb__img img")!!
         val href = fixUrl(mainUrl + this.attr("href"))
-
         val posterUrl = mainUrl+imgTag.attr("data-original")
-
-
         return newMovieSearchResponse(title, href, TvType.Movie) {
             this.posterUrl = posterUrl
         }
-
     }
 
     override suspend fun search(query: String, page: Int): SearchResponseList {
@@ -162,7 +158,7 @@ class Pornhd4k : MainAPI() {
         val md = MessageDigest.getInstance("MD5")
         val md5Bytes = md.digest(input.toByteArray())
         val md5Hex = md5Bytes.joinToString("") { "%02x".format(it) }
-        val rurl = "https://www9.pornhd3x.tv/ajax/get_sources/$uuid/$md5Hex?count=1&mobile=true"
+        val rurl = "https://pornhd4k.net/ajax/get_sources/$uuid/$md5Hex?count=1&mobile=true"
         val cookie = "826avrbi6m49vd7shxkn985m${uuid}k06twz87wwxtp3dqiicks2df=$id"
         val client = OkHttpClient()
         val request = Request.Builder()
