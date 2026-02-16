@@ -11,9 +11,9 @@ import org.jsoup.nodes.Element
 import java.io.IOException
 import java.security.MessageDigest
 
-class Pornhd4k : MainAPI() {
-    override var mainUrl = "https://pornhd4k.net"
-    override var name = "Pornhd4k"
+class Pornhd3x : MainAPI() {
+    override var mainUrl = "https://pornhd3x.tv"
+    override var name = "Pornhd3x"
     override val hasMainPage = true
     override val hasDownloadSupport = true
     override val vpnStatus = VPNStatus.MightBeNeeded
