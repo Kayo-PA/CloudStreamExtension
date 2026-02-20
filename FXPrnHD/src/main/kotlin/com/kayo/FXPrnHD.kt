@@ -69,7 +69,10 @@ class Fxprnhd : MainAPI() {
     }
 
     override suspend fun search(query: String, page: Int): SearchResponseList {
-        val searchParam = if (query == "latest") "" else query
+        val searchParam =
+            if ("p=" in query) "$mainUrl/actor/${query.replace(" ","-").replace("p=","")}/page/$page/"
+            else if (query == "latest") ""
+            else query
         val document = app.get("$mainUrl/page/$page/?s=$searchParam").document
         val results = document.select("div.videos-list > article").mapNotNull { it.toSearchResult() }
         val lastPageUrl = document.select("div.pagination ul li").last()?.selectFirst("a")?.attr("href")

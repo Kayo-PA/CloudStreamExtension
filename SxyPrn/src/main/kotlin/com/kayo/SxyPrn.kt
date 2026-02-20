@@ -92,7 +92,9 @@ class SxyPrn : MainAPI() {
     }
 
     override suspend fun search(query: String, page: Int): SearchResponseList? {
-        val searchParam = if (query == "latest") "NEW" else query
+        val searchParam =
+            if ("p=" in query) query.replace(" ","-").replace("p=","")
+            else if (query == "latest") "NEW" else query
         val headers = mapOf(
             "User-Agent" to "Mozilla/5.0 (Android 13; Mobile; rv:139.0) Gecko/139.0 Firefox/139.0"
         )
