@@ -89,7 +89,7 @@ class Perverzija : MainAPI() {
 
     override suspend fun search(query: String, page: Int): SearchResponseList? {
         val url = when {
-            "p=" in query -> "$mainUrl/actor/${query.replace(" ","-").replace("p=","")}/page/$page/"
+            "p=" in query -> "$mainUrl/stars/${query.replace(" ","-").replace("p=","")}/page/$page/"
             query.contains(" ") -> "$mainUrl/page/$page/?s=${query.replace(" ", "+")}&orderby=date"
             query == "latest" -> "$mainUrl/page/$page/?orderby=date"
             else -> "$mainUrl/tag/$query/page/$page/"
