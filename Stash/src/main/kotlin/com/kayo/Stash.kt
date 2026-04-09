@@ -83,9 +83,20 @@ class Stash : MainAPI() {
                 in 360..479 -> SearchQuality.SD
                 else -> SearchQuality.SD
             }
+            val studio = scene.studio?.name
+            val actors = scene.performers
+                ?.map { performer ->
+                    ActorData(
+                        Actor(
+                            performer.name ?: "Unknown",
+                            (performer.image_path + "&apikey=" + apiKey)   // or your own URL builder
+                        )
+                    )
+                } ?: emptyList()
+            val title =if(studio != null) "[$studio]-" else "" + actors+ "-" + (scene.title ?: "Untitled")
 
             newMovieSearchResponse(
-                scene.title ?: "Untitled",
+                title,
                 scene.id.toString(),
                 TvType.NSFW
             ) {
@@ -105,10 +116,12 @@ class Stash : MainAPI() {
         val bodyJson = getAllScenes(page, query)
         val initResponse = stashGraphQL(bodyJson)
         val parsed = gson.fromJson(initResponse, FindScenesResponse::class.java)
+
         val result = parsed.data?.findScenes ?: return null
 
         val scenes = result.scenes ?: emptyList()
         val totalCount = result.count ?: 0
+
 
         // Convert scenes → CloudStream SearchResponse
         val items = scenes.map { scene ->
@@ -122,9 +135,20 @@ class Stash : MainAPI() {
                 in 360..479 -> SearchQuality.SD
                 else -> SearchQuality.SD
             }
+            val studio = scene.studio?.name
+            val actors = scene.performers
+                ?.map { performer ->
+                    ActorData(
+                        Actor(
+                            performer.name ?: "Unknown",
+                            (performer.image_path + "&apikey=" + apiKey)   // or your own URL builder
+                        )
+                    )
+                } ?: emptyList()
+            val title =if(studio != null) "[$studio]-" else "" + actors+ "-" + (scene.title ?: "Untitled")
 
             newMovieSearchResponse(
-                scene.title ?: "Untitled",
+                title,
                 scene.id ?: "",
                 TvType.NSFW
             ) {
@@ -157,7 +181,7 @@ class Stash : MainAPI() {
                     )
                 )
             } ?: emptyList()
-        val title =if(studio != null) "[$studio] " else "" + actors+ "-" + (sceneFull?.title ?: "Untitled")
+        val title =if(studio != null) "[$studio]-" else "" + actors+ "-" + (sceneFull?.title ?: "Untitled")
         return newMovieLoadResponse(title, url, TvType.NSFW, url) {
             this.posterUrl = sceneFull?.paths?.screenshot + "&apikey=" + apiKey
             this.plot = sceneFull?.details
