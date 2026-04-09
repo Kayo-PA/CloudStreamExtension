@@ -180,11 +180,9 @@ class Stash : MainAPI() {
             ?.joinToString(", ") { performer ->
                 performer.name ?: "Unknown"
             } ?: ""
-        Log.e("actorname", actor)
         val title = (if (studio != null) "[$studio]-" else "") +
                 actor + "-" +
                 (sceneFull?.title ?: "Untitled")
-        Log.e("actorname", title)
         return newMovieLoadResponse(title, url, TvType.NSFW, url) {
             this.posterUrl = sceneFull?.paths?.screenshot + "&apikey=" + apiKey
             this.plot = sceneFull?.details
