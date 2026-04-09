@@ -89,7 +89,7 @@ class Stash : MainAPI() {
                 ?.joinToString(", ") { performer ->
                     performer.name ?: "Unknown"
                 } ?: ""
-            val title = "${if (studio != null) "[$studio]-" else ""}$actors-${scene.title ?: "Untitled"}"
+            val title = "${if (studio != null) "[$studio] - " else ""}$actors - ${scene.title ?: "Untitled"}"
 
             newMovieSearchResponse(
                 title,
@@ -136,7 +136,7 @@ class Stash : MainAPI() {
                 ?.joinToString(", ") { performer ->
                     performer.name ?: "Unknown"
                 } ?: ""
-            val title = "${if (studio != null) "[$studio]-" else ""}$actors-${scene.title ?: "Untitled"}"
+            val title = "${if (studio != null) "[$studio] - " else ""}$actors - ${scene.title ?: "Untitled"}"
 
             newMovieSearchResponse(
                 title,
@@ -176,7 +176,7 @@ class Stash : MainAPI() {
             ?.joinToString(", ") { performer ->
                 performer.name ?: "Unknown"
             } ?: ""
-        val title = "${if (studio != null) "[$studio]-" else ""}$actor-${sceneFull?.title ?: "Untitled"}"
+        val title = "${if (studio != null) "[$studio] - " else ""}$actor - ${sceneFull?.title ?: "Untitled"}"
         return newMovieLoadResponse(title, url, TvType.NSFW, url) {
             this.posterUrl = sceneFull?.paths?.screenshot + "&apikey=" + apiKey
             this.plot = sceneFull?.details
