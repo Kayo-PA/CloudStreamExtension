@@ -145,6 +145,7 @@ class Stash : MainAPI() {
         val initResponse = stashGraphQL(bodyJson)
         val parsed = gson.fromJson(initResponse, FindSceneResponse::class.java)
         val sceneFull = parsed.data?.findScene
+        val studio = sceneFull?.studio?.name
 
         val preview = sceneFull?.paths?.preview?.takeIf { it.isNotBlank() }
         val actors = sceneFull?.performers
@@ -156,7 +157,8 @@ class Stash : MainAPI() {
                     )
                 )
             } ?: emptyList()
-        return newMovieLoadResponse(sceneFull?.title ?: "", url, TvType.NSFW, url) {
+        val title =if(studio != null) "[$studio] " else "" + actors+ "-" + (sceneFull?.title ?: "Untitled")
+        return newMovieLoadResponse(title, url, TvType.NSFW, url) {
             this.posterUrl = sceneFull?.paths?.screenshot + "&apikey=" + apiKey
             this.plot = sceneFull?.details
             this.tags = sceneFull?.tags?.map { it.name.toString() }
