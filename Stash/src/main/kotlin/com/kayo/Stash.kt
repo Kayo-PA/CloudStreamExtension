@@ -85,14 +85,9 @@ class Stash : MainAPI() {
             }
             val studio = scene.studio?.name
             val actors = scene.performers
-                ?.map { performer ->
-                    ActorData(
-                        Actor(
-                            performer.name ?: "Unknown",
-                            (performer.image_path + "&apikey=" + apiKey)   // or your own URL builder
-                        )
-                    )
-                } ?: emptyList()
+                ?.joinToString(", ") { performer ->
+                    performer.name ?: "Unknown"
+                } ?: ""
             val title =if(studio != null) "[$studio]-" else "" + actors+ "-" + (scene.title ?: "Untitled")
 
             newMovieSearchResponse(
@@ -137,14 +132,9 @@ class Stash : MainAPI() {
             }
             val studio = scene.studio?.name
             val actors = scene.performers
-                ?.map { performer ->
-                    ActorData(
-                        Actor(
-                            performer.name ?: "Unknown",
-                            (performer.image_path + "&apikey=" + apiKey)   // or your own URL builder
-                        )
-                    )
-                } ?: emptyList()
+                ?.joinToString(", ") { performer ->
+                    performer.name ?: "Unknown"
+                } ?: ""
             val title =if(studio != null) "[$studio]-" else "" + actors+ "-" + (scene.title ?: "Untitled")
 
             newMovieSearchResponse(
@@ -181,7 +171,11 @@ class Stash : MainAPI() {
                     )
                 )
             } ?: emptyList()
-        val title =if(studio != null) "[$studio]-" else "" + actors+ "-" + (sceneFull?.title ?: "Untitled")
+        val actor = sceneFull?.performers
+            ?.joinToString(", ") { performer ->
+                performer.name ?: "Unknown"
+            } ?: ""
+        val title =if(studio != null) "[$studio]-" else "" + actor+ "-" + (sceneFull?.title ?: "Untitled")
         return newMovieLoadResponse(title, url, TvType.NSFW, url) {
             this.posterUrl = sceneFull?.paths?.screenshot + "&apikey=" + apiKey
             this.plot = sceneFull?.details
