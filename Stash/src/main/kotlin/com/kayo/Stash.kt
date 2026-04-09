@@ -1,5 +1,6 @@
 package com.kayo
 
+import android.util.Log
 import com.lagradost.cloudstream3.HomePageList
 import com.lagradost.cloudstream3.HomePageResponse
 import com.lagradost.cloudstream3.MainAPI
@@ -88,7 +89,9 @@ class Stash : MainAPI() {
                 ?.joinToString(", ") { performer ->
                     performer.name ?: "Unknown"
                 } ?: ""
-            val title =if(studio != null) "[$studio]-" else "" + actors+ "-" + (scene.title ?: "Untitled")
+            val title = (if (studio != null) "[$studio]-" else "") +
+                    actors + "-" +
+                    (scene.title ?: "Untitled")
 
             newMovieSearchResponse(
                 title,
@@ -135,7 +138,9 @@ class Stash : MainAPI() {
                 ?.joinToString(", ") { performer ->
                     performer.name ?: "Unknown"
                 } ?: ""
-            val title =if(studio != null) "[$studio]-" else "" + actors+ "-" + (scene.title ?: "Untitled")
+            val title = (if (studio != null) "[$studio]-" else "") +
+                    actors + "-" +
+                    (scene.title ?: "Untitled")
 
             newMovieSearchResponse(
                 title,
@@ -175,7 +180,11 @@ class Stash : MainAPI() {
             ?.joinToString(", ") { performer ->
                 performer.name ?: "Unknown"
             } ?: ""
-        val title =if(studio != null) "[$studio]-" else "" + actor+ "-" + (sceneFull?.title ?: "Untitled")
+        Log.e("actorname", actor)
+        val title = (if (studio != null) "[$studio]-" else "") +
+                actor + "-" +
+                (sceneFull?.title ?: "Untitled")
+        Log.e("actorname", title)
         return newMovieLoadResponse(title, url, TvType.NSFW, url) {
             this.posterUrl = sceneFull?.paths?.screenshot + "&apikey=" + apiKey
             this.plot = sceneFull?.details
