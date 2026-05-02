@@ -23,5 +23,5 @@ cloudstream {
         "Anime"
     )
 
-    iconUrl = "https://github.com/SaurabhKaperwan/CSX/raw/refs/heads/master/NetflixMirrorProvider/icon.png"
+    iconUrl = "https://github.com/Kayo-PA/CloudStreamExtension/blob/main/NetflixMirrorProvider/icon.png"
 }
