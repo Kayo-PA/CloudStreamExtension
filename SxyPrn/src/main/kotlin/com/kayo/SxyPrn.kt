@@ -1,6 +1,5 @@
 package com.kayo
 
-import android.util.Log
 import com.lagradost.cloudstream3.HomePageList
 import com.lagradost.cloudstream3.HomePageResponse
 import com.lagradost.cloudstream3.MainAPI
@@ -9,7 +8,6 @@ import com.lagradost.cloudstream3.TvType
 import com.lagradost.cloudstream3.VPNStatus
 import com.lagradost.cloudstream3.mainPageOf
 import com.lagradost.cloudstream3.network.CloudflareKiller
-import com.lagradost.cloudstream3.network.WebViewResolver
 import com.lagradost.cloudstream3.newHomePageResponse
 import com.lagradost.cloudstream3.utils.AppUtils
 import com.lagradost.cloudstream3.utils.ExtractorLink
@@ -78,7 +76,7 @@ class SxyPrn : MainAPI() {
         )
     }
 
-    private fun Element.toSearchResult(): SearchResponse? {
+    private fun Element.toSearchResult(): SearchResponse {
         val title = this.attr("title")
         val href = fixUrl(this.attr("href"))
         var posterUrl = fixUrl(this.select("div.post_el_small_mob_ls img").attr("src"))
@@ -91,7 +89,7 @@ class SxyPrn : MainAPI() {
         }
     }
 
-    override suspend fun search(query: String, page: Int): SearchResponseList? {
+    override suspend fun search(query: String, page: Int): SearchResponseList {
         val searchParam =
             if ("p=" in query) query.replace(" ","-").replace("p=","")
             else if (query == "latest") "NEW" else query
@@ -167,8 +165,8 @@ class SxyPrn : MainAPI() {
         return digitsOnly.sumOf { it.digitToInt() }
     }
 
-    private fun boo(ss: Int, es: Int, host: String): String {
-        val plain = "$ss-$host-$es"
+    private fun boo(ss: Int, es: Int): String {
+        val plain = "$ss-sxyprn.com-$es"
         val b64 =
             android.util.Base64.encodeToString(plain.toByteArray(), android.util.Base64.NO_WRAP)
         return b64.replace("+", "-").replace("/", "_").replace("=", ".")
@@ -189,10 +187,9 @@ class SxyPrn : MainAPI() {
         )
         val pid = parsed.keys.first()
         var url = parsed[pid]!! // non-nullable
-        val host = "sxyprn.com"
 
         val tmp = url.split("/").toMutableList()
-        tmp[1] += "8/${boo(generateNumber(tmp[6]), generateNumber(tmp[7]), host)}"
+        tmp[1] += "8/${boo(generateNumber(tmp[6]), generateNumber(tmp[7]))}"
         updateUrl(tmp)
 
         url = mainUrl + tmp.joinToString("/")
