@@ -178,6 +178,8 @@ class Fxprnhd : MainAPI() {
             .map { fixUrl(it) }
             .distinct()
 
+        val trackingUrl = page.select("a#tracking-url.button").attr("href")
+
         // ---------- 2) Try extractors on each iframe FIRST ----------
         for (iframeUrl in iframes) {
             try {
@@ -272,7 +274,7 @@ class Fxprnhd : MainAPI() {
         if (!foundAny) {
             try {
                 loadExtractor(
-                    data,
+                    trackingUrl,
                     referer,
                     subtitleCallback
                 ) { link ->
