@@ -140,7 +140,6 @@ class Pornhd3x : MainAPI() {
                 name,
                 name,
                 videoUrl,
-                type = ExtractorLinkType.M3U8
             ) {
                 val cookie = "826avrbi6m49vd7shxkn985m${uuid}k06twz87wwxtp3dqiicks2df=$generatedId"
                 this.referer = data
