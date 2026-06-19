@@ -226,7 +226,8 @@ class Stash : MainAPI() {
             runCatching {
                 val request = Request.Builder()
                     .url(streamUrl)
-                    .head()
+                    .get()
+                    .header("Range", "bytes=0-0")
                     .build()
 
                 val response = okHttp.newCall(request)
