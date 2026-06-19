@@ -220,18 +220,37 @@ class Stash : MainAPI() {
 
         val streams = sceneFull.sceneStreams ?: emptyList()
 
-        for (stream in streams) {
-            val streamUrl = stream.url ?: continue
-            callback.invoke(
-                newExtractorLink(
-                    source = "Stash",
-                    name = stream.label ?: "Stream",
-                    url = streamUrl,
-                    type = ExtractorLinkType.VIDEO
-                ){
-                    this.quality = 4320
-                }
-            )
+        val streamsAvailable = streams.firstOrNull()?.url?.let { streamUrl ->
+
+            runCatching {
+                val request = Request.Builder()
+                    .url(streamUrl)
+                    .head()
+                    .build()
+
+                okHttp.newCall(request)
+                    .execute()
+                    .code != 404
+            }.getOrDefault(false)
+
+        } ?: false
+
+        if (streamsAvailable) {
+
+            for (stream in streams) {
+                val streamUrl = stream.url ?: continue
+
+                callback(
+                    newExtractorLink(
+                        source = "Stash",
+                        name = stream.label ?: "Stream",
+                        url = streamUrl,
+                        type = ExtractorLinkType.VIDEO
+                    ) {
+                        quality = 4320
+                    }
+                )
+            }
         }
 
         val externalUrls = sceneFull.urls ?: emptyList()
