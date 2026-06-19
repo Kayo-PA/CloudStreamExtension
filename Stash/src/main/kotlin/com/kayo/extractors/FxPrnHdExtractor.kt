@@ -1,13 +1,9 @@
 package com.kayo.extractors
 
-import android.util.Log
 import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.app
-import com.lagradost.cloudstream3.utils.ExtractorApi
-import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.ExtractorLinkType
-import com.lagradost.cloudstream3.utils.loadExtractor
-import com.lagradost.cloudstream3.utils.newExtractorLink
+import com.lagradost.cloudstream3.utils.*
+import kotlinx.coroutines.*
 
 class FxPrnHdExtractor(
     override val name: String = "Fxpornhd",
@@ -21,45 +17,107 @@ class FxPrnHdExtractor(
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ) {
-        val doc = app.get(url).document
-        val iframe = doc.select("div.responsive-player iframe").attr("src")
+        coroutineScope {
 
-        if (iframe.isBlank()) return
+            val document = app.get(url).document
 
-        // STEP 2: If this iframe is fxpornhd itself
-        if (iframe.startsWith(mainUrl)) {
+            val iframeUrls = document.select("iframe[src]")
+                .map { normalize(it.attr("src")) }
+                .filter { it.isNotBlank() }
+                .distinct()
 
-            val videoDoc = app.get(iframe, referer = url).document
-            val videoUrl = videoDoc.select("video source").attr("src")
+            val trackingUrl = document.select("a#tracking-url.button")
+                .attr("href")
+                .takeIf { it.isNotBlank() }
+                ?.let(::normalize)
 
-            if (videoUrl.isBlank()) return
+            val jobs = mutableListOf<Deferred<Unit>>()
 
-            callback.invoke(
-                newExtractorLink(
-                    source = name,
-                    name = "$name (Direct)",
-                    url = videoUrl,
-                    type = ExtractorLinkType.VIDEO
-                ) {
-                    this.referer = mainUrl
-                    this.quality = getQualityFromUrl(videoUrl)
-                }
-            )
-        }
-        else {
-            // STEP 3: Let CloudStream extract from iframe provider (StreamTape, Dood, VidGuard, etc.)
-            loadExtractor(iframe, referer ?: url, subtitleCallback, callback)
+            iframeUrls.forEach { iframe ->
+
+                // Try Cloudstream extractors on iframe URL
+                jobs.add(
+                    async(Dispatchers.IO) {
+                        runCatching {
+                            loadExtractor(
+                                iframe,
+                                referer ?: url,
+                                subtitleCallback,
+                                callback
+                            )
+                        }
+                        Unit
+                    }
+                )
+
+                // Check iframe page for direct video sources
+                jobs.add(
+                    async(Dispatchers.IO) {
+                        runCatching {
+
+                            val iframeDoc = app.get(
+                                iframe,
+                                referer = url
+                            ).document
+
+                            iframeDoc.select("video[src], source[src]")
+                                .forEach { element ->
+
+                                    val src = element.attr("src")
+                                    if (src.isBlank()) return@forEach
+
+                                    callback(
+                                        newExtractorLink(
+                                            source = name,
+                                            name = "$name Direct",
+                                            url = normalize(src),
+                                            type = if (
+                                                src.contains(
+                                                    ".m3u8",
+                                                    ignoreCase = true
+                                                )
+                                            ) {
+                                                ExtractorLinkType.M3U8
+                                            } else {
+                                                ExtractorLinkType.VIDEO
+                                            }
+                                        ) {
+                                            this.referer = iframe
+                                        }
+                                    )
+                                }
+                        }
+                        Unit
+                    }
+                )
+            }
+
+            // Tracking button contains extractor URLs only
+            trackingUrl?.let { tracking ->
+
+                jobs.add(
+                    async(Dispatchers.IO) {
+                        runCatching {
+                            loadExtractor(
+                                tracking,
+                                referer ?: url,
+                                subtitleCallback,
+                                callback
+                            )
+                        }
+                        Unit
+                    }
+                )
+            }
+
+            jobs.awaitAll()
         }
     }
 
-    private fun getQualityFromUrl(url: String): Int {
+    private fun normalize(url: String): String {
         return when {
-            url.contains("2160") || url.contains("4k", ignoreCase = true) -> 2160
-            url.contains("1440") -> 1440
-            url.contains("1080") -> 1080
-            url.contains("720") -> 720
-            url.contains("480") -> 480
-            else -> -1
+            url.startsWith("//") -> "https:$url"
+            else -> url
         }
     }
 }

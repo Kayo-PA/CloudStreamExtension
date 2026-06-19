@@ -4,6 +4,10 @@ import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.cloudstream3.utils.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import org.jsoup.nodes.Element
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
@@ -133,159 +137,91 @@ class Fxprnhd : MainAPI() {
         }
 
     }
-
-    //    override suspend fun loadLinks(
-//        data: String,
-//        isCasting: Boolean,
-//        subtitleCallback: (SubtitleFile) -> Unit,
-//        callback: (ExtractorLink) -> Unit
-//    ): Boolean {
-//
-//        val iframe = app.get(data).document.select("div.responsive-player iframe").attr("src")
-//
-//        if (iframe.startsWith(mainUrl)) {
-//            val video = app.get(iframe, referer = data).document.select("video source").attr("src")
-//            callback.invoke(
-//                newExtractorLink(
-//                    this.name,
-//                    this.name,
-//                    video,
-//                    ExtractorLinkType.VIDEO
-//                ) {
-//                    this.referer = "$mainUrl/"
-//                }
-//            )
-//        } else {
-//            loadExtractor(iframe, "$mainUrl/", subtitleCallback, callback)
-//        }
-//
-//        return true
-//    }
     override suspend fun loadLinks(
         data: String,
         isCasting: Boolean,
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
-    ): Boolean {
+    ): Boolean = coroutineScope {
 
-        val page = app.get(data).document
-        val referer = data
+        val document = app.get(data).document
         var foundAny = false
 
-        // ---------- 1) Collect all iframes ----------
-        val iframes = page.select("iframe")
-            .mapNotNull { it.attr("src")?.takeIf { s -> s.isNotBlank() } }
-            .map { fixUrl(it) }
+        val iframeUrls = document.select("iframe[src]")
+            .map { fixUrl(it.attr("src")) }
+            .filter { it.isNotBlank() }
             .distinct()
 
-        val trackingUrl = page.select("a#tracking-url.button").attr("href")
+        val trackingUrl = document.select("a#tracking-url.button")
+            .attr("href")
+            .takeIf { it.isNotBlank() }
+            ?.let(::fixUrl)
 
-        // ---------- 2) Try extractors on each iframe FIRST ----------
-        for (iframeUrl in iframes) {
-            try {
-                loadExtractor(
-                    iframeUrl,
-                    referer,
-                    subtitleCallback
-                ) { link ->
-                    foundAny = true
-                    callback(link)
+        val extractorTargets = buildList {
+            addAll(iframeUrls)
+            trackingUrl?.let(::add)
+        }.distinct()
+
+        // Run all extractors concurrently
+        extractorTargets.map { target ->
+            async(Dispatchers.IO) {
+                runCatching {
+                    loadExtractor(
+                        target,
+                        data,
+                        subtitleCallback
+                    ) { link ->
+                        foundAny = true
+                        callback(link)
+                    }
                 }
-            } catch (_: Throwable) {
             }
-        }
+        }.awaitAll()
 
-        // ---------- 3) Load each iframe page and try direct <video>/<source> ----------
-        for (iframeUrl in iframes) {
-            try {
-                val iframeDoc = app.get(iframeUrl, referer = referer).document
-
-                // <video src="...">
-                iframeDoc.select("video[src]").forEach { v ->
-                    val src = v.attr("src")
-                    if (src.isNotBlank()) {
-                        foundAny = true
-                        callback(
-                            newExtractorLink(
-                                name,
-                                name,
-                                fixUrl(src),
-                                ExtractorLinkType.VIDEO
-                            ) {
-                                this.referer = iframeUrl
-                            }
-                        )
-                    }
-                }
-
-                // <video><source src="..."></source></video>
-                iframeDoc.select("video source[src]").forEach { s ->
-                    val src = s.attr("src")
-                    if (src.isNotBlank()) {
-                        val type = if (src.contains(".m3u8", true))
-                            ExtractorLinkType.M3U8
-                        else
-                            ExtractorLinkType.VIDEO
-
-                        foundAny = true
-                        callback(
-                            newExtractorLink(
-                                name,
-                                name,
-                                fixUrl(src),
-                                type
-                            ) {
-                                this.referer = iframeUrl
-                            }
-                        )
-                    }
-                }
-
-                // ---------- 4) JWPlayer / script scan for visible HLS ----------
-                // This works ONLY if the URL is visible in JS (soft JWPlayer)
-                val scriptsText = iframeDoc.select("script").joinToString("\n") { it.data() }
-
-                // Common patterns: file:"...m3u8", sources:[{file:"..."}]
-                val hlsRegex = Regex(
-                    """(?i)(file|src)\s*[:=]\s*["']([^"'\\]+\.m3u8[^"'\\]*)["']"""
-                )
-
-                hlsRegex.findAll(scriptsText).forEach { m ->
-                    val hlsUrl = m.groupValues[2]
-                    if (hlsUrl.isNotBlank()) {
-                        foundAny = true
-                        callback(
-                            newExtractorLink(
-                                name,
-                                "HLS",
-                                fixUrl(hlsUrl)
-                            ) {
-                                this.referer = iframeUrl
-                            }
-                        )
-                    }
-                }
-
-            } catch (_: Throwable) {
-            }
-        }
-
-        // ---------- 5) Final fallback: try extractors on the page itself ----------
+        // Fallback only if no extractor returned anything
         if (!foundAny) {
-            try {
-                loadExtractor(
-                    trackingUrl,
-                    referer,
-                    subtitleCallback
-                ) { link ->
-                    foundAny = true
-                    callback(link)
+
+            iframeUrls.map { iframeUrl ->
+                async(Dispatchers.IO) {
+
+                    runCatching {
+
+                        val iframeDoc = app.get(
+                            iframeUrl,
+                            referer = data
+                        ).document
+
+                        iframeDoc.select("video[src], source[src]")
+                            .forEach { element ->
+
+                                val src = element.attr("src")
+                                if (src.isBlank()) return@forEach
+
+                                foundAny = true
+
+                                callback(
+                                    newExtractorLink(
+                                        source = name,
+                                        name = "$name Direct",
+                                        url = fixUrl(src),
+                                        type = if (
+                                            src.contains(".m3u8", true)
+                                        ) {
+                                            ExtractorLinkType.M3U8
+                                        } else {
+                                            ExtractorLinkType.VIDEO
+                                        }
+                                    ) {
+                                        referer = iframeUrl
+                                    }
+                                )
+                            }
+                    }
                 }
-            } catch (_: Throwable) {
-            }
+            }.awaitAll()
         }
 
-        return foundAny
+        foundAny
     }
 
 }

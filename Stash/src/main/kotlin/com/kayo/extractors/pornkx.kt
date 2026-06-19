@@ -1,4 +1,4 @@
-package com.kayo.extractor
+package com.kayo.extractors
 
 import android.os.Build
 import androidx.annotation.RequiresApi

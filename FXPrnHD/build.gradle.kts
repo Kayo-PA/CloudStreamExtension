@@ -1,4 +1,7 @@
-version = 12
+version = 13
+dependencies {
+    implementation("androidx.annotation:annotation-jvm:1.10.0")
+}
 
 cloudstream {
     authors     = listOf("kayo")
