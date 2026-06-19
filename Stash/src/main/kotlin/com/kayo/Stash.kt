@@ -229,7 +229,7 @@ class Stash : MainAPI() {
                     url = streamUrl,
                     type = ExtractorLinkType.VIDEO
                 ){
-                    this.quality = 4520
+                    this.quality = 4320
                 }
             )
         }
