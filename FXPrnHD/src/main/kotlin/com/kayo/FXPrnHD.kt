@@ -159,17 +159,6 @@ class Fxprnhd : MainAPI() {
             document.select("a#tracking-url.button").attr("href").takeIf { it.isNotBlank() }
                 ?.let(::fixUrl) ?: ""
 
-        callback.invoke(
-            newExtractorLink(
-                name,
-                name,
-                iframeUrl,
-                type = ExtractorLinkType.VIDEO
-            ) {
-                this.referer = mainUrl
-            }
-        )
-
         loadExtractor(
             iframeUrl,
             referer = mainUrl,
@@ -182,6 +171,17 @@ class Fxprnhd : MainAPI() {
             referer = mainUrl,
             subtitleCallback = subtitleCallback,
             callback = callback
+        )
+
+        callback.invoke(
+            newExtractorLink(
+                name,
+                name,
+                iframeUrl,
+                type = ExtractorLinkType.VIDEO
+            ) {
+                this.referer = mainUrl
+            }
         )
 
         return true
