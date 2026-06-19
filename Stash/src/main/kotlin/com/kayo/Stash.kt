@@ -230,7 +230,8 @@ class Stash : MainAPI() {
 
                 okHttp.newCall(request)
                     .execute()
-                    .code != 404
+                    .isSuccessful
+
             }.getOrDefault(false)
 
         } ?: false
