@@ -1,5 +1,5 @@
 // use an integer for version numbers
-version = 45
+version = 46
 dependencies {
     implementation("androidx.annotation:annotation-jvm:1.9.1")
 

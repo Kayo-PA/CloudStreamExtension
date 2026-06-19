@@ -235,14 +235,39 @@ class Stash : MainAPI() {
         val externalUrls = sceneFull.urls ?: emptyList()
 
         for (ext in externalUrls) {
-            if (ext.isBlank()) continue
-            // CloudStream extractor handler
-            loadExtractor(
-                ext,
-                referer = mainUrl,
-                subtitleCallback = subtitleCallback,
-                callback = callback
-            )
+
+            when {
+                ext.startsWith("m3u8-") -> {
+                    callback(
+                        newExtractorLink(
+                            source = "Stash",
+                            name = "Direct HLS",
+                            url = ext.removePrefix("m3u8-"),
+                            type = ExtractorLinkType.M3U8
+                        )
+                    )
+                }
+
+                ext.startsWith("video-") -> {
+                    callback(
+                        newExtractorLink(
+                            source = "Stash",
+                            name = "Direct Video",
+                            url = ext.removePrefix("video-"),
+                            type = ExtractorLinkType.VIDEO
+                        )
+                    )
+                }
+
+                else -> {
+                    loadExtractor(
+                        ext,
+                        referer = mainUrl,
+                        subtitleCallback = subtitleCallback,
+                        callback = callback
+                    )
+                }
+            }
         }
 
         return true
