@@ -230,12 +230,9 @@ class Stash : MainAPI() {
                     .header("Range", "bytes=0-0")
                     .build()
 
-                val response = okHttp.newCall(request)
-                    .execute().code
-                Log.e("response12",response.toString())
-                Log.e("response12",streams.toString())
-                Log.e("response12",streamUrl)
-                return false
+                okHttp.newCall(request)
+                    .execute().isSuccessful
+
             }.getOrDefault(false)
 
         } ?: false
