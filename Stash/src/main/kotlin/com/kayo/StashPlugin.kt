@@ -3,8 +3,11 @@ package com.kayo
 import android.content.Context
 import com.kayo.alias.Dumbalag
 import com.kayo.extractors.FxPrnHdExtractor
+import com.kayo.extractors.LuluStream
 import com.kayo.extractors.PerverzijaExtractor
-import com.kayo.extractors.Pornkx
+import com.kayo.extractors.PornHd3xExtractor
+import com.kayo.extractors.PornHd4KExtractor
+import com.kayo.extractors.PornkxExtractor
 import com.lagradost.cloudstream3.extractors.*
 import com.lagradost.cloudstream3.plugins.CloudstreamPlugin
 import com.lagradost.cloudstream3.plugins.Plugin
@@ -17,7 +20,10 @@ class StashPlugin : Plugin() {
         registerMainAPI(Stash())
         registerExtractorAPI(FxPrnHdExtractor())
         registerExtractorAPI(PerverzijaExtractor())
-        registerExtractorAPI(Pornkx())
+        registerExtractorAPI(PornkxExtractor())
+        registerExtractorAPI(PornHd3xExtractor())
+        registerExtractorAPI(PornHd4KExtractor())
+
         registerExtractorAPI(Dumbalag())
 
 

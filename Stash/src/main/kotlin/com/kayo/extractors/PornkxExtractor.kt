@@ -33,7 +33,7 @@ data class Source(
     val file: String?
 )
 
-open class Pornkx(
+open class PornkxExtractor(
     override val name: String = "Pornkx",
     override val mainUrl: String = "https://hls.pornkx.com",
     override val requiresReferer: Boolean = false
