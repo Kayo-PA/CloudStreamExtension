@@ -12,14 +12,11 @@ import com.lagradost.cloudstream3.TvType
 import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.fixUrlNull
 import com.lagradost.cloudstream3.mainPageOf
-import com.lagradost.cloudstream3.network.CloudflareKiller
 import com.lagradost.cloudstream3.newHomePageResponse
 import com.lagradost.cloudstream3.newMovieLoadResponse
 import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.newSearchResponseList
 import com.lagradost.cloudstream3.utils.ExtractorLink
-import khttp.head
-import kotlinx.coroutines.delay
 import org.jsoup.nodes.Element
 
 class Perverzija : MainAPI() {
@@ -87,7 +84,7 @@ class Perverzija : MainAPI() {
 
     }
 
-    override suspend fun search(query: String, page: Int): SearchResponseList? {
+    override suspend fun search(query: String, page: Int): SearchResponseList {
         val url = when {
             "p=" in query -> "$mainUrl/stars/${query.replace(" ","-").replace("p=","")}/page/$page/"
             query.contains(" ") -> "$mainUrl/page/$page/?s=${query.replace(" ", "+")}&orderby=date"
