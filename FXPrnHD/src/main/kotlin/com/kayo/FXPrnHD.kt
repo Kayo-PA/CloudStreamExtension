@@ -74,13 +74,19 @@ class Fxprnhd : MainAPI() {
 
     override suspend fun search(query: String, page: Int): SearchResponseList {
         val searchParam =
-            if ("p=" in query) "$mainUrl/actor/${query.replace(" ","-").replace("p=","")}/page/$page/"
+            if ("p=" in query) "$mainUrl/actor/${
+                query.replace(" ", "-").replace("p=", "")
+            }/page/$page/"
             else if (query == "latest") "$mainUrl/page/$page/?s="
             else "$mainUrl/page/$page/?s=$query"
         val document = app.get(searchParam).document
-        val results = document.select("div.videos-list > article").mapNotNull { it.toSearchResult() }
-        val lastPageUrl = document.select("div.pagination ul li").last()?.selectFirst("a")?.attr("href")
-        val totalPages = Regex("""page/(\d+)/""").find(lastPageUrl ?: "")?.groupValues?.get(1)?.toIntOrNull() ?: 1
+        val results =
+            document.select("div.videos-list > article").mapNotNull { it.toSearchResult() }
+        val lastPageUrl =
+            document.select("div.pagination ul li").last()?.selectFirst("a")?.attr("href")
+        val totalPages =
+            Regex("""page/(\d+)/""").find(lastPageUrl ?: "")?.groupValues?.get(1)?.toIntOrNull()
+                ?: 1
         val hasNext = page < totalPages
         return newSearchResponseList(list = results, hasNext = hasNext)
     }
@@ -137,91 +143,48 @@ class Fxprnhd : MainAPI() {
         }
 
     }
+
     override suspend fun loadLinks(
         data: String,
         isCasting: Boolean,
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
-    ): Boolean = coroutineScope {
+    ): Boolean {
 
         val document = app.get(data).document
-        var foundAny = false
+        val iframeUrl =
+            document.select("iframe[src]").attr("src").takeIf { it.isNotBlank() }?.let(::fixUrl)
+                ?: ""
+        val trackingUrl =
+            document.select("a#tracking-url.button").attr("href").takeIf { it.isNotBlank() }
+                ?.let(::fixUrl) ?: ""
 
-        val iframeUrls = document.select("iframe[src]")
-            .map { fixUrl(it.attr("src")) }
-            .filter { it.isNotBlank() }
-            .distinct()
-
-        val trackingUrl = document.select("a#tracking-url.button")
-            .attr("href")
-            .takeIf { it.isNotBlank() }
-            ?.let(::fixUrl)
-
-        val extractorTargets = buildList {
-            addAll(iframeUrls)
-            trackingUrl?.let(::add)
-        }.distinct()
-
-        // Run all extractors concurrently
-        extractorTargets.map { target ->
-            async(Dispatchers.IO) {
-                runCatching {
-                    loadExtractor(
-                        target,
-                        data,
-                        subtitleCallback
-                    ) { link ->
-                        foundAny = true
-                        callback(link)
-                    }
-                }
+        callback.invoke(
+            newExtractorLink(
+                name,
+                name,
+                iframeUrl,
+                type = ExtractorLinkType.VIDEO
+            ) {
+                this.referer = mainUrl
             }
-        }.awaitAll()
+        )
 
-        // Fallback only if no extractor returned anything
-        if (!foundAny) {
+        loadExtractor(
+            iframeUrl,
+            referer = mainUrl,
+            subtitleCallback = subtitleCallback,
+            callback = callback
+        )
 
-            iframeUrls.map { iframeUrl ->
-                async(Dispatchers.IO) {
+        loadExtractor(
+            trackingUrl,
+            referer = mainUrl,
+            subtitleCallback = subtitleCallback,
+            callback = callback
+        )
 
-                    runCatching {
+        return true
 
-                        val iframeDoc = app.get(
-                            iframeUrl,
-                            referer = data
-                        ).document
-
-                        iframeDoc.select("video[src], source[src]")
-                            .forEach { element ->
-
-                                val src = element.attr("src")
-                                if (src.isBlank()) return@forEach
-
-                                foundAny = true
-
-                                callback(
-                                    newExtractorLink(
-                                        source = name,
-                                        name = "$name Direct",
-                                        url = fixUrl(src),
-                                        type = if (
-                                            src.contains(".m3u8", true)
-                                        ) {
-                                            ExtractorLinkType.M3U8
-                                        } else {
-                                            ExtractorLinkType.VIDEO
-                                        }
-                                    ) {
-                                        referer = iframeUrl
-                                    }
-                                )
-                            }
-                    }
-                }
-            }.awaitAll()
-        }
-
-        foundAny
     }
-
 }

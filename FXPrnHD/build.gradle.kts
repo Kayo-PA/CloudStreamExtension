@@ -1,4 +1,4 @@
-version = 1
+version = 2
 dependencies {
     implementation("androidx.annotation:annotation-jvm:1.10.0")
 }
