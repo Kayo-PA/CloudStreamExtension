@@ -1,5 +1,6 @@
 package com.kayo
 
+import android.util.Log
 import com.lagradost.cloudstream3.HomePageList
 import com.lagradost.cloudstream3.HomePageResponse
 import com.lagradost.cloudstream3.MainAPI
@@ -228,10 +229,10 @@ class Stash : MainAPI() {
                     .head()
                     .build()
 
-                okHttp.newCall(request)
-                    .execute()
-                    .isSuccessful
-
+                val response = okHttp.newCall(request)
+                    .execute().code
+                Log.e("response",response.toString())
+                return false
             }.getOrDefault(false)
 
         } ?: false
