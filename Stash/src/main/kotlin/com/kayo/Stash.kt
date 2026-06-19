@@ -231,7 +231,9 @@ class Stash : MainAPI() {
 
                 val response = okHttp.newCall(request)
                     .execute().code
-                Log.e("response",response.toString())
+                Log.e("response12",response.toString())
+                Log.e("response12",streams.toString())
+                Log.e("response12",streamUrl)
                 return false
             }.getOrDefault(false)
 
