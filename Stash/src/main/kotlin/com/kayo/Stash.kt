@@ -23,6 +23,7 @@ import com.kayo.helper.FindScenesResponse
 import com.kayo.helper.findSceneById
 import com.kayo.helper.getAllScenes
 import com.kayo.helper.getFavAtScenes
+import com.kayo.helper.getRanAtScenes
 import com.kayo.helper.getUpdatedAtScenes
 import com.lagradost.cloudstream3.Actor
 import com.lagradost.cloudstream3.ActorData
@@ -53,11 +54,10 @@ class Stash : MainAPI() {
 
     override val mainPage = mainPageOf(
         "latest" to "Latest",
-        "popular" to "Popular",
+        "random" to "Random",
         "updated_at" to "Updated At",
         "favourite" to "Favourite"
     )
-
     override suspend fun getMainPage(
         page: Int,
         request: MainPageRequest
@@ -66,6 +66,7 @@ class Stash : MainAPI() {
         val jsonBody = when (request.name) {
             "Updated At" -> getUpdatedAtScenes(page)
             "Favourite" -> getFavAtScenes(page)
+            "Random" -> getRanAtScenes(page)
             else -> getAllScenes(page)
         }
         val response = stashGraphQL(jsonBody)
