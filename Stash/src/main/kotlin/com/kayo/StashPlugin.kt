@@ -220,7 +220,6 @@ class StashPlugin : Plugin() {
         registerExtractorAPI(StreamoUpload())
         registerExtractorAPI(Streamplay())
         registerExtractorAPI(Streamsss())
-        registerExtractorAPI(Streamup())
         registerExtractorAPI(Streamwish2())
         registerExtractorAPI(Strwish())
         registerExtractorAPI(Strwish2())
