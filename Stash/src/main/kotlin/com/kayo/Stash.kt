@@ -216,7 +216,7 @@ class Stash : MainAPI() {
         val parsed = gson.fromJson(initResponse, FindSceneResponse::class.java)
         val sceneFull = parsed.data?.findScene ?: return false
         val captionTypes = sceneFull.captions
-        val captionUrl = sceneFull.paths?.caption + "?lang=en&type=vtt"
+        val captionUrl = sceneFull.paths?.caption
         if (captionTypes != null) {
             for (item in captionTypes) {
                 subtitleCallback.invoke(
