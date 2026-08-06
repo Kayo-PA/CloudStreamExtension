@@ -222,7 +222,7 @@ class Stash : MainAPI() {
                 subtitleCallback.invoke(
                     newSubtitleFile(
                         item.language_code,
-                        "$captionUrl?lang=${item.language_code}&type=${item.caption_type}"
+                        "$captionUrl?lang=${item.language_code}&type=${item.caption_type}&apikey=$apiKey"
                     )
                 )
 
