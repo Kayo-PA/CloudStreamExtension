@@ -58,6 +58,7 @@ class Stash : MainAPI() {
         "updated_at" to "Updated At",
         "favourite" to "Favourite"
     )
+
     override suspend fun getMainPage(
         page: Int,
         request: MainPageRequest
@@ -91,7 +92,8 @@ class Stash : MainAPI() {
                 ?.joinToString(", ") { performer ->
                     performer.name ?: "Unknown"
                 } ?: ""
-            val title = "${if (studio != null) "[$studio] - " else ""}$actors - ${scene.title ?: "Untitled"}"
+            val title =
+                "${if (studio != null) "[$studio] - " else ""}$actors - ${scene.title ?: "Untitled"}"
 
             newMovieSearchResponse(
                 title,
@@ -138,7 +140,8 @@ class Stash : MainAPI() {
                 ?.joinToString(", ") { performer ->
                     performer.name ?: "Unknown"
                 } ?: ""
-            val title = "${if (studio != null) "[$studio] - " else ""}$actors - ${scene.title ?: "Untitled"}"
+            val title =
+                "${if (studio != null) "[$studio] - " else ""}$actors - ${scene.title ?: "Untitled"}"
 
             newMovieSearchResponse(
                 title,
@@ -178,7 +181,8 @@ class Stash : MainAPI() {
             ?.joinToString(", ") { performer ->
                 performer.name ?: "Unknown"
             } ?: ""
-        val title = "${if (studio != null) "[$studio] - " else ""}$actor - ${sceneFull?.title ?: "Untitled"}"
+        val title =
+            "${if (studio != null) "[$studio] - " else ""}$actor - ${sceneFull?.title ?: "Untitled"}"
         return newMovieLoadResponse(title, url, TvType.NSFW, url) {
             this.posterUrl = sceneFull?.paths?.screenshot + "&apikey=" + apiKey
             this.plot = sceneFull?.details
@@ -211,14 +215,18 @@ class Stash : MainAPI() {
         val initResponse = stashGraphQL(bodyJson)
         val parsed = gson.fromJson(initResponse, FindSceneResponse::class.java)
         val sceneFull = parsed.data?.findScene ?: return false
+        val captionTypes = sceneFull.captions
         val captionUrl = sceneFull.paths?.caption + "?lang=en&type=vtt"
-        if (captionUrl.isNotBlank()) {
-            subtitleCallback.invoke(
-                newSubtitleFile(
-                    "English",
-                    captionUrl
+        if (captionTypes != null) {
+            for (item in captionTypes) {
+                subtitleCallback.invoke(
+                    newSubtitleFile(
+                        item.language_code,
+                        "$captionUrl?lang=${item.language_code}&type=${item.caption_type}"
+                    )
                 )
-            )
+
+            }
         }
 
         val streams = sceneFull.sceneStreams ?: emptyList()
@@ -297,6 +305,7 @@ class Stash : MainAPI() {
 
         return true
     }
+
     fun stashGraphQL(bodyJson: String): String {
         val req = Request.Builder()
             .url("$mainUrl/graphql")

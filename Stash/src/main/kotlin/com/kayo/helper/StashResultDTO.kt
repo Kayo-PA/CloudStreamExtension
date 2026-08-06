@@ -138,8 +138,8 @@ data class ScenePathsFull(
 // =====================
 
 data class Caption(
-    val language_code: String?,
-    val caption_type: String?
+    val language_code: String,
+    val caption_type: String
 )
 
 
