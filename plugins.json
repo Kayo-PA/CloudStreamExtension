@@ -1,0 +1,164 @@
+[
+    {
+        "url": "https://raw.githubusercontent.com/Kayo-PA/CloudStreamExtension/builds/FXPrnHD.cs3",
+        "status": 1,
+        "version": 3,
+        "name": "FXPrnHD",
+        "internalName": "FXPrnHD",
+        "authors": [
+            "kayo"
+        ],
+        "description": "(VPN) Premium porn with 720p support",
+        "fileSize": 23248,
+        "repositoryUrl": "https://github.com/Kayo-PA/CloudStreamExtension",
+        "language": "en",
+        "tvTypes": [
+            "NSFW"
+        ],
+        "iconUrl": "https://fxpornhd.com/wp-content/uploads/2024/06/logo-fxpornhd.com_.png",
+        "apiVersion": 1,
+        "fileHash": "sha256-6fdb41c1ccefeb2af96b6a0c07ac7aad23606a51f555e15d261042b85ee9e6d4"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/Kayo-PA/CloudStreamExtension/builds/MissAV.cs3",
+        "status": 3,
+        "version": 1,
+        "name": "MissAV",
+        "internalName": "MissAV",
+        "authors": [
+            "kayo"
+        ],
+        "description": "Best Japan AV porn site, free forever, high speed, no lag, over 100,000 videos with daily update.",
+        "fileSize": 13266,
+        "repositoryUrl": "https://github.com/Kayo-PA/CloudStreamExtension",
+        "language": "en",
+        "tvTypes": [
+            "NSFW"
+        ],
+        "iconUrl": "https://missav.ws/missav/logo-square.png",
+        "apiVersion": 1,
+        "fileHash": "sha256-89f87d0d0848e1580e3b8410c7a58841959ff01d2b148ccbc261458b3549e788"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/Kayo-PA/CloudStreamExtension/builds/NetflixMirrorProvider.cs3",
+        "status": 3,
+        "version": 4,
+        "name": "NetflixMirrorProvider",
+        "internalName": "NetflixMirrorProvider",
+        "authors": [
+            "kayo"
+        ],
+        "description": "Netflix, PrimeVideo(Lionsgate), JioHotstar(Hotstar, Disney, Paramount, HBO, Peacock) Content in Multiple Languages",
+        "fileSize": 58441,
+        "repositoryUrl": "https://github.com/Kayo-PA/CloudStreamExtension",
+        "tvTypes": [
+            "Movie",
+            "TvSeries",
+            "AsianDrama",
+            "Anime"
+        ],
+        "iconUrl": "https://github.com/Kayo-PA/CloudStreamExtension/blob/main/NetflixMirrorProvider/icon.png",
+        "apiVersion": 1,
+        "fileHash": "sha256-eca28fb04558b7345afe7cbed5fe59e4f65217c86d17ba6894f8d76a86016d52"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/Kayo-PA/CloudStreamExtension/builds/Perverzija.cs3",
+        "status": 1,
+        "version": 1,
+        "name": "Perverzija",
+        "internalName": "Perverzija",
+        "authors": [
+            "Kayo"
+        ],
+        "description": "Contains all the videos from Perverzija",
+        "fileSize": 14655,
+        "repositoryUrl": "https://github.com/Kayo-PA/CloudStreamExtension",
+        "language": "en",
+        "tvTypes": [
+            "NSFW"
+        ],
+        "iconUrl": "https://www.google.com/s2/favicons?domain=tube.perverzija.com&sz=%size%",
+        "apiVersion": 1,
+        "fileHash": "sha256-02411807acdd0b1d80c050c959978783e06bb3890ce0ab8024fedc0c69e04f93"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/Kayo-PA/CloudStreamExtension/builds/Pornhd3x.cs3",
+        "status": 3,
+        "version": 1,
+        "name": "Pornhd3x",
+        "internalName": "Pornhd3x",
+        "authors": [
+            "Kayo"
+        ],
+        "description": "i hope it works",
+        "fileSize": 14982,
+        "repositoryUrl": "https://github.com/Kayo-PA/CloudStreamExtension",
+        "language": "en",
+        "tvTypes": [
+            "NSFW"
+        ],
+        "iconUrl": "https://images.icon-icons.com/1364/PNG/512/letterp_89126.png",
+        "apiVersion": 1,
+        "fileHash": "sha256-be13b0dd08030e1b42eaab8e90cb4516865a037bcf2ead2055feac1d8a27d559"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/Kayo-PA/CloudStreamExtension/builds/Pornhd4k.cs3",
+        "status": 3,
+        "version": 1,
+        "name": "Pornhd4k",
+        "internalName": "Pornhd4k",
+        "authors": [
+            "Kayo"
+        ],
+        "description": "i hope it works",
+        "fileSize": 14691,
+        "repositoryUrl": "https://github.com/Kayo-PA/CloudStreamExtension",
+        "language": "en",
+        "tvTypes": [
+            "NSFW"
+        ],
+        "iconUrl": "https://images.icon-icons.com/1364/PNG/512/letterp_89126.png",
+        "apiVersion": 1,
+        "fileHash": "sha256-88347f314079204847f046f1c62c32004e7b027c28f4b9d9342ac0f0dd800cb2"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/Kayo-PA/CloudStreamExtension/builds/Stash.cs3",
+        "status": 3,
+        "version": 7,
+        "name": "Stash",
+        "internalName": "Stash",
+        "authors": [
+            "Kayo"
+        ],
+        "description": "Stash",
+        "fileSize": 69966,
+        "repositoryUrl": "https://github.com/Kayo-PA/CloudStreamExtension",
+        "language": "en",
+        "tvTypes": [
+            "NSFW"
+        ],
+        "iconUrl": "https://docs.stashapp.cc/assets/images/favicon.ico",
+        "apiVersion": 1,
+        "fileHash": "sha256-115d66bb4e20323aea2695c64e9348209b9cef956328df04a499003f4cb2862d"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/Kayo-PA/CloudStreamExtension/builds/SxyPrn.cs3",
+        "status": 1,
+        "version": 1,
+        "name": "SxyPrn",
+        "internalName": "SxyPrn",
+        "authors": [
+            "Kayo"
+        ],
+        "description": "sxyprn",
+        "fileSize": 21212,
+        "repositoryUrl": "https://github.com/Kayo-PA/CloudStreamExtension",
+        "language": "en",
+        "tvTypes": [
+            "NSFW"
+        ],
+        "iconUrl": "https://www.google.com/s2/favicons?domain=sxyprn.com&sz=%size%",
+        "apiVersion": 1,
+        "fileHash": "sha256-410a46d4cfa938c73146dd8005664530456663ec7397a44533d3c5461e28f8cd"
+    }
+]
