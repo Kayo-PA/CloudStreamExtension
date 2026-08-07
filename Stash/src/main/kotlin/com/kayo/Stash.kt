@@ -220,7 +220,6 @@ class Stash : MainAPI() {
         val captionUrl = sceneFull.paths?.caption
         if (captionTypes != null) {
             for (item in captionTypes) {
-                Log.d("somethingLink","$captionUrl?lang=${item.language_code}&type=${item.caption_type}&apikey=$apiKey")
                 subtitleCallback.invoke(
                     newSubtitleFile(
                         item.language_code,
