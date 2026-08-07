@@ -1,5 +1,6 @@
 package com.kayo
 
+import android.util.Log
 import com.lagradost.cloudstream3.HomePageList
 import com.lagradost.cloudstream3.HomePageResponse
 import com.lagradost.cloudstream3.MainAPI
@@ -219,6 +220,7 @@ class Stash : MainAPI() {
         val captionUrl = sceneFull.paths?.caption
         if (captionTypes != null) {
             for (item in captionTypes) {
+                Log.d("somethingLink","$captionUrl?lang=${item.language_code}&type=${item.caption_type}&apikey=$apiKey")
                 subtitleCallback.invoke(
                     newSubtitleFile(
                         item.language_code,
