@@ -23,6 +23,7 @@ import com.kayo.helper.FindScenesResponse
 import com.kayo.helper.findSceneById
 import com.kayo.helper.getAllScenes
 import com.kayo.helper.getFavAtScenes
+import com.kayo.helper.getJavAtScenes
 import com.kayo.helper.getRanAtScenes
 import com.kayo.helper.getUpdatedAtScenes
 import com.lagradost.cloudstream3.Actor
