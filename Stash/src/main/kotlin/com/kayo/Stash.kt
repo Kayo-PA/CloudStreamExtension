@@ -1,6 +1,5 @@
 package com.kayo
 
-import android.util.Log
 import com.lagradost.cloudstream3.HomePageList
 import com.lagradost.cloudstream3.HomePageResponse
 import com.lagradost.cloudstream3.MainAPI
@@ -57,7 +56,8 @@ class Stash : MainAPI() {
         "latest" to "Latest",
         "random" to "Random",
         "updated_at" to "Updated At",
-        "favourite" to "Favourite"
+        "favourite" to "Favourite",
+        "jav" to "Jav"
     )
 
     override suspend fun getMainPage(
@@ -69,6 +69,7 @@ class Stash : MainAPI() {
             "Updated At" -> getUpdatedAtScenes(page)
             "Favourite" -> getFavAtScenes(page)
             "Random" -> getRanAtScenes(page)
+            "Jav" -> getJavAtScenes(page)
             else -> getAllScenes(page)
         }
         val response = stashGraphQL(jsonBody)
